@@ -1,0 +1,27 @@
+ion-card {
+  margin: 16px;
+}
+
+ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-label[position="stacked"] {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+ion-note {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.ion-padding ion-spinner {
+  display: block;
+  margin: 20px auto;
+}
+
+ion-button {
+  margin-top: 8px;
+}

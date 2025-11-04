@@ -1,0 +1,283 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/registro-lista"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalle del Registro</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="compartir()">
+        <ion-icon name="share-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando detalles...</p>
+  </div>
+
+  <!-- Contenido del Registro -->
+  <div *ngIf="!loading && registro">
+    <!-- Encabezado con Estado -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          {{ registro.numero_registro }}
+          <ion-badge [color]="getEstadoColor(registro.estado || '')" class="ion-float-right">
+            {{ getEstadoTexto(registro.estado || '') }}
+          </ion-badge>
+        </ion-card-title>
+        <ion-card-subtitle>
+          {{ registro.fecha | date:'dd/MM/yyyy' }} - {{ registro.hora }}
+        </ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Información del Cliente -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="business-outline"></ion-icon>
+          Cliente
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h3>Empresa</h3>
+              <p>{{ registro.cliente?.nombre }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Representante</h3>
+              <p>{{ registro.representante_cliente }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.cliente?.ruc">
+            <ion-label>
+              <h3>RUC</h3>
+              <p>{{ registro.cliente?.ruc }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del Transporte -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="car-outline"></ion-icon>
+          Transporte
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h3>Chofer</h3>
+              <p>{{ registro.chofer?.nombre }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>DNI</h3>
+              <p>{{ registro.chofer?.dni }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Placa Principal</h3>
+              <p>{{ registro.placa1?.numero_placa }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.placa2">
+            <ion-label>
+              <h3>Placa Secundaria</h3>
+              <p>{{ registro.placa2?.numero_placa }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información de Mercancía -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="cube-outline"></ion-icon>
+          Mercancía
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngIf="registro.descripcionJaba1">
+            <ion-label>
+              <h3>{{ registro.descripcionJaba1.descripcion }}</h3>
+              <p>Cantidad: {{ registro.cantidad_jabas_1 }} jabas</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.descripcionJaba2">
+            <ion-label>
+              <h3>{{ registro.descripcionJaba2.descripcion }}</h3>
+              <p>Cantidad: {{ registro.cantidad_jabas_2 }} jabas</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Parihuelas</h3>
+              <p>Cantidad: {{ registro.cantidad_parihuelas }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.guia_remision">
+            <ion-label>
+              <h3>Guía de Remisión</h3>
+              <p>{{ registro.guia_remision }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Observaciones -->
+    <ion-card *ngIf="registro.observaciones">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="document-text-outline"></ion-icon>
+          Observaciones
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ registro.observaciones }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Motivo de Rechazo -->
+    <ion-card *ngIf="registro.estado === 'rechazado' && registro.motivo_rechazo" color="danger">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          Motivo de Rechazo
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ registro.motivo_rechazo }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Imagen -->
+    <ion-card *ngIf="registro.imagen_path">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="image-outline"></ion-icon>
+          Fotografía
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" (click)="verImagen()">
+          <ion-icon slot="start" name="eye-outline"></ion-icon>
+          Ver Imagen
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Firmas Digitales -->
+    <ion-card *ngIf="registro.firma_entregado || registro.firma_representante">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="create-outline"></ion-icon>
+          Firmas Digitales
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row *ngIf="registro.firma_entregado">
+            <ion-col size="12">
+              <h4>Firma del Entregado</h4>
+              <img [src]="registro.firma_entregado" alt="Firma Entregado" class="firma-img">
+            </ion-col>
+          </ion-row>
+          <ion-row *ngIf="registro.firma_representante">
+            <ion-col size="12">
+              <h4>Firma del Representante</h4>
+              <img [src]="registro.firma_representante" alt="Firma Representante" class="firma-img">
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Acciones -->
+    <ion-card>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-button expand="block" color="success" (click)="cambiarEstado()" *ngIf="registro.estado !== 'aprobado'">
+                <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+                Cambiar Estado
+              </ion-button>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-button expand="block" color="primary" (click)="descargarPDF()">
+                <ion-icon slot="start" name="download-outline"></ion-icon>
+                Descargar PDF
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-button expand="block" color="medium" fill="outline" (click)="adjuntarPDF()">
+                <ion-icon slot="start" name="document-attach-outline"></ion-icon>
+                Adjuntar PDF
+              </ion-button>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-button expand="block" color="danger" fill="outline" (click)="eliminar()">
+                <ion-icon slot="start" name="trash-outline"></ion-icon>
+                Eliminar Registro
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Información del Sistema -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Información del Sistema
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label>
+              <h3>Creado por</h3>
+              <p>{{ registro.usuario?.name || 'N/A' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <h3>Fecha de creación</h3>
+              <p>{{ registro.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.updated_at !== registro.created_at">
+            <ion-label>
+              <h3>Última actualización</h3>
+              <p>{{ registro.updated_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

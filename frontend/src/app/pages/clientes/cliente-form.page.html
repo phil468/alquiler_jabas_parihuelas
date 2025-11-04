@@ -1,0 +1,128 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancelar()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Editar Cliente' : 'Nuevo Cliente' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="ion-padding" *ngIf="loading">
+    <ion-spinner></ion-spinner>
+    <p>{{ isEditMode ? 'Cargando datos...' : 'Guardando...' }}</p>
+  </div>
+
+  <form [formGroup]="clienteForm" *ngIf="!loading">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información Básica</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Código <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input 
+            formControlName="codigo" 
+            placeholder="Ej: CLI-001"
+            type="text"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="getErrorMessage('codigo')">
+            {{ getErrorMessage('codigo') }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Nombre o Razón Social <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input 
+            formControlName="nombre" 
+            placeholder="Nombre del cliente"
+            type="text"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="getErrorMessage('nombre')">
+            {{ getErrorMessage('nombre') }}
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">RUC</ion-label>
+          <ion-input 
+            formControlName="ruc" 
+            placeholder="11 dígitos"
+            type="tel"
+            maxlength="11"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="getErrorMessage('ruc')">
+            {{ getErrorMessage('ruc') }}
+          </ion-note>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Información de Contacto</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Dirección</ion-label>
+          <ion-textarea 
+            formControlName="direccion" 
+            placeholder="Dirección completa"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Teléfono</ion-label>
+          <ion-input 
+            formControlName="telefono" 
+            placeholder="Ej: 987654321"
+            type="tel"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input 
+            formControlName="email" 
+            placeholder="correo@empresa.com"
+            type="email"
+          ></ion-input>
+          <ion-note slot="error" *ngIf="getErrorMessage('email')">
+            {{ getErrorMessage('email') }}
+          </ion-note>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Estado</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Cliente Activo</ion-label>
+          <ion-toggle formControlName="activo" slot="end"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="ion-padding">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ isEditMode ? 'Actualizar Cliente' : 'Crear Cliente' }}
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="cancelar()" [disabled]="loading">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancelar
+      </ion-button>
+    </div>
+  </form>
+</ion-content>
