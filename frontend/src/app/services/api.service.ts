@@ -5,22 +5,42 @@ import { environment } from '../../environments/environment';
 
 export interface Cliente {
   id: number;
-  codigo: string;
+  codigo?: string;
   nombre: string;
   ruc?: string;
   direccion?: string;
   telefono?: string;
   email?: string;
   activo: boolean;
+  representante_activo?: RepresentanteCliente;
+  representantes?: RepresentanteCliente[];
+}
+
+export interface RepresentanteCliente {
+  id: number;
+  cliente_id: number;
+  nombre: string;
+  dni?: string;
+  telefono?: string;
+  email?: string;
+  cargo?: string;
+  activo: boolean;
+  created_at?: string;
+  updated_at?: string;
+  cliente?: Cliente;
 }
 
 export interface Chofer {
   id: number;
+  cliente_id?: number;
+  placa_principal_id?: number;
   nombre: string;
   dni: string;
   licencia?: string;
   telefono?: string;
   activo: boolean;
+  cliente?: Cliente;
+  placaPrincipal?: Placa;
 }
 
 export interface Placa {
@@ -55,7 +75,8 @@ export interface Registro {
   fecha?: string;
   hora?: string;
   cliente_id: number;
-  representante_cliente: string;
+  representante_cliente_id?: number;
+  representante_cliente?: string;
   chofer_id: number;
   placa_1_id?: number;
   placa_2_id?: number;
@@ -83,6 +104,7 @@ export interface Registro {
   descripcionJaba1?: DescripcionJaba;
   descripcionJaba2?: DescripcionJaba;
   usuario?: Usuario;
+  representanteCliente?: RepresentanteCliente;
 }
 
 export interface ApiResponse<T> {
@@ -113,8 +135,10 @@ export class ApiService {
     return this.http.get<Cliente[]>(`${this.apiUrl}/clientes`);
   }
 
-  getClientesActivos(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${this.apiUrl}/opciones/clientes`);
+  getClientesActivos(): Observable<ApiResponse<Cliente[]>> {
+    return this.http.get<ApiResponse<Cliente[]>>(
+      `${this.apiUrl}/opciones/clientes`
+    );
   }
 
   getCliente(id: number): Observable<ApiResponse<Cliente>> {
@@ -142,13 +166,77 @@ export class ApiService {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/clientes/${id}`);
   }
 
-  // ========== CHOFERES ==========
-  getChoferes(): Observable<Chofer[]> {
-    return this.http.get<Chofer[]>(`${this.apiUrl}/choferes`);
+  // ========== REPRESENTANTES DE CLIENTES ==========
+  getRepresentantesClientes(
+    clienteId?: number
+  ): Observable<ApiResponse<RepresentanteCliente[]>> {
+    const params = clienteId
+      ? new HttpParams().set('cliente_id', clienteId.toString())
+      : undefined;
+    return this.http.get<ApiResponse<RepresentanteCliente[]>>(
+      `${this.apiUrl}/representantes-clientes`,
+      { params }
+    );
   }
 
-  getChoferesActivos(): Observable<Chofer[]> {
-    return this.http.get<Chofer[]>(`${this.apiUrl}/opciones/choferes`);
+  getRepresentanteCliente(
+    id: number
+  ): Observable<ApiResponse<RepresentanteCliente>> {
+    return this.http.get<ApiResponse<RepresentanteCliente>>(
+      `${this.apiUrl}/representantes-clientes/${id}`
+    );
+  }
+
+  createRepresentanteCliente(
+    data: Partial<RepresentanteCliente>
+  ): Observable<ApiResponse<RepresentanteCliente>> {
+    return this.http.post<ApiResponse<RepresentanteCliente>>(
+      `${this.apiUrl}/representantes-clientes`,
+      data
+    );
+  }
+
+  updateRepresentanteCliente(
+    id: number,
+    data: Partial<RepresentanteCliente>
+  ): Observable<ApiResponse<RepresentanteCliente>> {
+    return this.http.put<ApiResponse<RepresentanteCliente>>(
+      `${this.apiUrl}/representantes-clientes/${id}`,
+      data
+    );
+  }
+
+  deleteRepresentanteCliente(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(
+      `${this.apiUrl}/representantes-clientes/${id}`
+    );
+  }
+
+  activarRepresentanteCliente(
+    id: number
+  ): Observable<ApiResponse<RepresentanteCliente>> {
+    return this.http.post<ApiResponse<RepresentanteCliente>>(
+      `${this.apiUrl}/representantes-clientes/${id}/activar`,
+      {}
+    );
+  }
+
+  // ========== CHOFERES ==========
+  getChoferes(clienteId?: number): Observable<any> {
+    const params = clienteId
+      ? new HttpParams().set('cliente_id', clienteId.toString())
+      : undefined;
+    return this.http.get<any>(`${this.apiUrl}/choferes`, { params });
+  }
+
+  getChoferesActivos(clienteId?: number): Observable<ApiResponse<Chofer[]>> {
+    const params = clienteId
+      ? new HttpParams().set('cliente_id', clienteId.toString())
+      : undefined;
+    return this.http.get<ApiResponse<Chofer[]>>(
+      `${this.apiUrl}/opciones/choferes`,
+      { params }
+    );
   }
 
   getChofer(id: number): Observable<ApiResponse<Chofer>> {
@@ -178,8 +266,10 @@ export class ApiService {
     return this.http.get<Placa[]>(`${this.apiUrl}/placas`);
   }
 
-  getPlacasActivas(): Observable<Placa[]> {
-    return this.http.get<Placa[]>(`${this.apiUrl}/opciones/placas`);
+  getPlacasActivas(): Observable<ApiResponse<Placa[]>> {
+    return this.http.get<ApiResponse<Placa[]>>(
+      `${this.apiUrl}/opciones/placas`
+    );
   }
 
   getPlaca(id: number): Observable<ApiResponse<Placa>> {
@@ -211,8 +301,8 @@ export class ApiService {
     );
   }
 
-  getDescripcionesJabasActivas(): Observable<DescripcionJaba[]> {
-    return this.http.get<DescripcionJaba[]>(
+  getDescripcionesJabasActivas(): Observable<ApiResponse<DescripcionJaba[]>> {
+    return this.http.get<ApiResponse<DescripcionJaba[]>>(
       `${this.apiUrl}/opciones/descripciones-jabas`
     );
   }

@@ -1,12 +1,6 @@
-import {
-  Component,
-  EventEmitter,
-  Output,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-firma-pad',
@@ -17,42 +11,66 @@ import { IonicModule } from '@ionic/angular';
 })
 export class FirmaPadComponent {
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
-  @Output() firmaGuardada = new EventEmitter<string>();
-  @Output() firmaCancelada = new EventEmitter<void>();
 
   private ctx!: CanvasRenderingContext2D;
   private drawing = false;
   private lastX = 0;
   private lastY = 0;
 
+  constructor(private modalCtrl: ModalController) {}
+
   ngAfterViewInit() {
-    const canvas = this.canvas.nativeElement;
-    this.ctx = canvas.getContext('2d')!;
+    // Usar setTimeout para asegurar que el canvas esté renderizado
+    setTimeout(() => {
+      const canvas = this.canvas.nativeElement;
+      if (!canvas) {
+        console.error('Canvas no encontrado');
+        return;
+      }
 
-    // Configurar tamaño del canvas
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 200;
+      this.ctx = canvas.getContext('2d')!;
 
-    // Configurar estilo del trazo
-    this.ctx.strokeStyle = '#000000';
-    this.ctx.lineWidth = 2;
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
+      // Configurar tamaño del canvas basado en el contenedor
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.offsetWidth - 4; // Restar borde
+        canvas.height = 200;
+      } else {
+        canvas.width = 500; // Tamaño por defecto
+        canvas.height = 200;
+      }
 
-    // Eventos táctiles para móvil
-    canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), {
-      passive: false,
-    });
-    canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), {
-      passive: false,
-    });
-    canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+      console.log('Canvas inicializado:', canvas.width, 'x', canvas.height);
 
-    // Eventos de mouse para web
-    canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-    canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
-    canvas.addEventListener('mouseleave', this.handleMouseUp.bind(this));
+      // Establecer fondo blanco
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Configurar estilo del trazo
+      this.ctx.strokeStyle = '#000000';
+      this.ctx.lineWidth = 3;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+
+      console.log('Contexto configurado - listo para dibujar');
+
+      // Eventos táctiles para móvil
+      canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), {
+        passive: false,
+      });
+      canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), {
+        passive: false,
+      });
+      canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+
+      // Eventos de mouse para web
+      canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+      canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+      canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+      canvas.addEventListener('mouseleave', this.handleMouseUp.bind(this));
+
+      console.log('Event listeners agregados');
+    }, 300);
   }
 
   // Touch events
@@ -85,10 +103,12 @@ export class FirmaPadComponent {
 
   // Mouse events
   handleMouseDown(e: MouseEvent) {
+    console.log('Mouse down');
     const rect = this.canvas.nativeElement.getBoundingClientRect();
     this.lastX = e.clientX - rect.left;
     this.lastY = e.clientY - rect.top;
     this.drawing = true;
+    console.log('Drawing iniciado en:', this.lastX, this.lastY);
   }
 
   handleMouseMove(e: MouseEvent) {
@@ -104,21 +124,31 @@ export class FirmaPadComponent {
   }
 
   handleMouseUp(e: MouseEvent) {
+    if (this.drawing) {
+      console.log('Mouse up - fin del trazo');
+    }
     this.drawing = false;
   }
 
   // Dibujar línea
   drawLine(x1: number, y1: number, x2: number, y2: number) {
+    console.log('Dibujando línea de', x1, y1, 'a', x2, y2);
     this.ctx.beginPath();
     this.ctx.moveTo(x1, y1);
     this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
+    this.ctx.closePath();
   }
 
   // Limpiar canvas
   limpiar() {
     const canvas = this.canvas.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Restaurar fondo blanco
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Restaurar color de trazo
+    this.ctx.strokeStyle = '#000000';
   }
 
   // Verificar si hay firma
@@ -137,19 +167,18 @@ export class FirmaPadComponent {
   }
 
   // Guardar firma como base64
-  guardar() {
+  async guardar() {
     if (this.isEmpty()) {
       alert('Por favor, dibuje su firma');
       return;
     }
 
     const firmaBase64 = this.canvas.nativeElement.toDataURL('image/png');
-    this.firmaGuardada.emit(firmaBase64);
+    await this.modalCtrl.dismiss(firmaBase64);
   }
 
   // Cancelar
-  cancelar() {
-    this.limpiar();
-    this.firmaCancelada.emit();
+  async cancelar() {
+    await this.modalCtrl.dismiss();
   }
 }

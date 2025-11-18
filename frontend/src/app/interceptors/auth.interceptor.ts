@@ -34,8 +34,7 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           // Token expirado o inválido
-          this.authService.logout().subscribe();
-          this.router.navigate(['/login']);
+          this.authService.logout(); // Ya no necesita subscribe, es async
         }
         return throwError(() => error);
       })

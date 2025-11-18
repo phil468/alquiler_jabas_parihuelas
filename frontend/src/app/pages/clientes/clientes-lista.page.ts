@@ -53,7 +53,7 @@ export class ClientesListaPage implements OnInit {
     this.clientesFiltrados = this.clientes.filter(
       (cliente) =>
         cliente.nombre.toLowerCase().includes(searchTerm) ||
-        cliente.codigo.toLowerCase().includes(searchTerm) ||
+        cliente.codigo?.toLowerCase().includes(searchTerm) ||
         cliente.ruc?.toLowerCase().includes(searchTerm)
     );
   }
@@ -98,6 +98,8 @@ export class ClientesListaPage implements OnInit {
     try {
       await this.apiService
         .updateCliente(cliente.id, {
+          // dni: cliente.dni,
+          nombre: cliente.nombre,
           activo: !cliente.activo,
         })
         .toPromise();
@@ -136,6 +138,6 @@ export class ClientesListaPage implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/configuracion']);
   }
 }

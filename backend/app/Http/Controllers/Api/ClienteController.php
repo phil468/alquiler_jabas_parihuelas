@@ -14,7 +14,10 @@ class ClienteController extends Controller
      */
     public function index()
     {
-        return $clientes = Cliente::orderBy('created_at', 'desc')->get();
+        return $clientes = 
+        Cliente::orderBy('created_at', 'desc')
+        ->with('representanteActivo')
+        ->get();
 
         try {
             $clientes = Cliente::orderBy('created_at', 'desc')->get();
@@ -59,7 +62,7 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'codigo' => 'required|string|max:20|unique:clientes,codigo',
+            'codigo' => 'nullable|string|max:50|unique:clientes,codigo',
             'nombre' => 'required|string|max:255',
             'ruc' => 'nullable|string|max:11',
             'direccion' => 'nullable|string|max:255',
@@ -125,7 +128,7 @@ class ClienteController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'codigo' => 'required|string|max:20|unique:clientes,codigo,' . $id,
+            'codigo' => 'nullable|string|max:20|unique:clientes,codigo,' . $id,
             'nombre' => 'required|string|max:255',
             'ruc' => 'nullable|string|max:11',
             'direccion' => 'nullable|string|max:255',

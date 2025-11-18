@@ -28,10 +28,19 @@
 
           <ion-item>
             <ion-label position="stacked">Representante del Cliente *</ion-label>
-            <ion-input 
-              formControlName="representante_cliente" 
-              placeholder="Nombre del representante">
-            </ion-input>
+            <ion-select 
+              formControlName="representante_cliente_id" 
+              placeholder="Seleccione representante"
+              [disabled]="representantesCliente.length === 0">
+              <ion-select-option 
+                *ngFor="let rep of representantesCliente" 
+                [value]="rep.id">
+                {{ rep.nombre }}{{ rep.activo ? ' (ACTIVO)' : '' }}{{ rep.cargo ? ' - ' + rep.cargo : '' }}
+              </ion-select-option>
+            </ion-select>
+            <ion-note *ngIf="registroForm.get('cliente_id')?.value && representantesCliente.length === 0" color="warning">
+              El cliente no tiene representantes registrados
+            </ion-note>
           </ion-item>
         </ion-list>
       </ion-card-content>
@@ -158,12 +167,36 @@
     <!-- Firmas Digitales -->
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Firmas</ion-card-title>
+        <ion-card-title>Firmas Digitales</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-note color="medium">
-          Las firmas digitales se implementarán en la siguiente fase
-        </ion-note>
+        <!-- Firma del Entregado -->
+        <ion-item>
+          <ion-label position="stacked">Firma del Entregado</ion-label>
+          <div style="width: 100%; margin-top: 10px;">
+            <ion-button expand="block" fill="outline" (click)="abrirFirmaEntregado()">
+              <ion-icon name="create-outline" slot="start"></ion-icon>
+              {{ firmaEntregado ? 'Modificar Firma' : 'Agregar Firma' }}
+            </ion-button>
+            <div *ngIf="firmaEntregado" style="margin-top: 10px; text-align: center;">
+              <img [src]="firmaEntregado" alt="Firma Entregado" style="max-width: 300px; border: 1px solid #ccc; border-radius: 4px;" />
+            </div>
+          </div>
+        </ion-item>
+
+        <!-- Firma del Representante -->
+        <ion-item>
+          <ion-label position="stacked">Firma del Representante del Cliente</ion-label>
+          <div style="width: 100%; margin-top: 10px;">
+            <ion-button expand="block" fill="outline" (click)="abrirFirmaRepresentante()">
+              <ion-icon name="create-outline" slot="start"></ion-icon>
+              {{ firmaRepresentante ? 'Modificar Firma' : 'Agregar Firma' }}
+            </ion-button>
+            <div *ngIf="firmaRepresentante" style="margin-top: 10px; text-align: center;">
+              <img [src]="firmaRepresentante" alt="Firma Representante" style="max-width: 300px; border: 1px solid #ccc; border-radius: 4px;" />
+            </div>
+          </div>
+        </ion-item>
       </ion-card-content>
     </ion-card>
 

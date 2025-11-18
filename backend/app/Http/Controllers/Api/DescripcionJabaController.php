@@ -14,6 +14,8 @@ class DescripcionJabaController extends Controller
      */
     public function index()
     {
+        return $descripciones = DescripcionJaba::orderBy('created_at', 'desc')->get();
+
         try {
             $descripciones = DescripcionJaba::orderBy('created_at', 'desc')->get();
 

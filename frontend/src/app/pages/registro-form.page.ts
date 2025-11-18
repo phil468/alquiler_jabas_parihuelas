@@ -40,7 +40,9 @@ import {
   Chofer,
   Placa,
   DescripcionJaba,
+  RepresentanteCliente,
 } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
 import { addIcons } from 'ionicons';
 import {
   cameraOutline,
@@ -48,7 +50,7 @@ import {
   closeOutline,
   createOutline,
 } from 'ionicons/icons';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { FirmaPadComponent } from '../components/firma-pad.component';
 
 @Component({
@@ -81,6 +83,7 @@ import { FirmaPadComponent } from '../components/firma-pad.component';
     IonIcon,
     IonSpinner,
   ],
+  providers: [ModalController],
 })
 export class RegistroFormPage implements OnInit {
   registroForm!: FormGroup;
@@ -89,6 +92,7 @@ export class RegistroFormPage implements OnInit {
   choferes: Chofer[] = [];
   placas: Placa[] = [];
   descripcionesJabas: DescripcionJaba[] = [];
+  representantesCliente: RepresentanteCliente[] = [];
 
   imagenCapturada: string | null = null;
   firmaEntregado: string | null = null;
@@ -99,6 +103,7 @@ export class RegistroFormPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
+    private authService: AuthService,
     private router: Router,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
@@ -116,7 +121,7 @@ export class RegistroFormPage implements OnInit {
   initForm() {
     this.registroForm = this.fb.group({
       cliente_id: ['', Validators.required],
-      representante_cliente: ['', Validators.required],
+      representante_cliente_id: ['', Validators.required],
       chofer_id: ['', Validators.required],
       placa_1_id: [''],
       placa_2_id: [''],
@@ -126,6 +131,57 @@ export class RegistroFormPage implements OnInit {
       cantidad_jabas_2: [0, Validators.min(0)],
       cantidad_parihuelas: [0, [Validators.required, Validators.min(0)]],
       observaciones: [''],
+    });
+
+    // Cuando cambia el cliente, cargar sus representantes y choferes
+    this.registroForm
+      .get('cliente_id')
+      ?.valueChanges.subscribe(async (clienteId) => {
+        if (clienteId) {
+          await Promise.all([
+            this.cargarRepresentantesCliente(clienteId),
+            this.cargarChoferesCliente(clienteId),
+          ]);
+
+          // Buscar cliente seleccionado y preseleccionar representante activo
+          const cliente = this.clientes.find((c) => c.id === clienteId);
+          if (cliente?.representante_activo) {
+            this.registroForm.patchValue({
+              representante_cliente_id: cliente.representante_activo.id,
+            });
+          } else {
+            this.registroForm.patchValue({ representante_cliente_id: '' });
+          }
+
+          // Limpiar selección de chofer y placas
+          this.registroForm.patchValue({
+            chofer_id: '',
+            placa_1_id: '',
+            placa_2_id: '',
+          });
+        } else {
+          this.representantesCliente = [];
+          this.choferes = [];
+          this.placas = [];
+          this.registroForm.patchValue({
+            representante_cliente_id: '',
+            chofer_id: '',
+            placa_1_id: '',
+            placa_2_id: '',
+          });
+        }
+      });
+
+    // Cuando cambia el chofer, auto-seleccionar su placa principal
+    this.registroForm.get('chofer_id')?.valueChanges.subscribe((choferId) => {
+      if (choferId) {
+        const chofer = this.choferes.find((c) => c.id === choferId);
+        if (chofer?.placa_principal_id) {
+          this.registroForm.patchValue({
+            placa_1_id: chofer.placa_principal_id,
+          });
+        }
+      }
     });
   }
 
@@ -137,15 +193,18 @@ export class RegistroFormPage implements OnInit {
 
     try {
       // Cargar todas las opciones para los dropdowns
-      this.clientes =
-        (await this.apiService.getClientesActivos().toPromise()) || [];
-      this.choferes =
-        (await this.apiService.getChoferesActivos().toPromise()) || [];
-      this.placas =
-        (await this.apiService.getPlacasActivas().toPromise()) || [];
-      this.descripcionesJabas =
-        (await this.apiService.getDescripcionesJabasActivas().toPromise()) ||
-        [];
+      const clientesRes = await this.apiService
+        .getClientesActivos()
+        .toPromise();
+      this.clientes = clientesRes?.data || [];
+
+      // No cargar todos los choferes y placas inicialmente
+      // Se cargarán cuando se seleccione un cliente
+
+      const descripcionesRes = await this.apiService
+        .getDescripcionesJabasActivas()
+        .toPromise();
+      this.descripcionesJabas = descripcionesRes?.data || [];
     } catch (error) {
       console.error('Error loading data:', error);
       const toast = await this.toastCtrl.create({
@@ -156,6 +215,55 @@ export class RegistroFormPage implements OnInit {
       await toast.present();
     } finally {
       await loading.dismiss();
+    }
+  }
+
+  async cargarRepresentantesCliente(clienteId: number) {
+    try {
+      const response = await this.apiService
+        .getRepresentantesClientes(clienteId)
+        .toPromise();
+      this.representantesCliente = response?.data || [];
+    } catch (error) {
+      console.error('Error al cargar representantes:', error);
+      this.representantesCliente = [];
+    }
+  }
+
+  async cargarChoferesCliente(clienteId: number) {
+    try {
+      const response = await this.apiService
+        .getChoferesActivos(clienteId)
+        .toPromise();
+      this.choferes = response?.data || [];
+
+      // Cargar las placas de los choferes del cliente
+      await this.cargarPlacasDeChoferes();
+    } catch (error) {
+      console.error('Error al cargar choferes:', error);
+      this.choferes = [];
+      this.placas = [];
+    }
+  }
+
+  async cargarPlacasDeChoferes() {
+    try {
+      // Obtener todas las placas activas
+      const response = await this.apiService.getPlacasActivas().toPromise();
+      const todasLasPlacas = response?.data || [];
+
+      // Obtener los IDs de las placas principales de los choferes del cliente
+      const placasIdsDeChoferes = this.choferes
+        .filter((chofer) => chofer.placa_principal_id)
+        .map((chofer) => chofer.placa_principal_id);
+
+      // Filtrar solo las placas que pertenecen a los choferes del cliente
+      this.placas = todasLasPlacas.filter((placa) =>
+        placasIdsDeChoferes.includes(placa.id)
+      );
+    } catch (error) {
+      console.error('Error al cargar placas:', error);
+      this.placas = [];
     }
   }
 
@@ -247,6 +355,12 @@ export class RegistroFormPage implements OnInit {
     try {
       const formData = new FormData();
 
+      // Obtener user_id del usuario autenticado
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('Usuario no autenticado');
+      }
+
       // Agregar campos del formulario
       Object.keys(this.registroForm.value).forEach((key) => {
         const value = this.registroForm.value[key];
@@ -254,6 +368,10 @@ export class RegistroFormPage implements OnInit {
           formData.append(key, value);
         }
       });
+
+      // Agregar user_id
+      console.log('Current user ID:', currentUser.id);
+      formData.append('user_id', currentUser.id.toString());
 
       // Agregar imagen si existe
       if (this.imagenCapturada) {

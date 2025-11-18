@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ClienteController;
+use App\Http\Controllers\Api\RepresentanteClienteController;
 use App\Http\Controllers\Api\ChoferController;
 use App\Http\Controllers\Api\PlacaController;
 use App\Http\Controllers\Api\DescripcionJabaController;
@@ -45,6 +46,8 @@ Route::prefix('v1')->group(function () {
     
     // Tablas de mantenimiento
     Route::apiResource('clientes', ClienteController::class);
+    Route::apiResource('representantes-clientes', RepresentanteClienteController::class);
+    Route::post('representantes-clientes/{id}/activar', [RepresentanteClienteController::class, 'activar']);
     Route::apiResource('choferes', ChoferController::class);
     Route::apiResource('placas', PlacaController::class);
     Route::apiResource('descripciones-jabas', DescripcionJabaController::class);

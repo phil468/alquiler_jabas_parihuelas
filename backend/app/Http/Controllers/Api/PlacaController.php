@@ -14,6 +14,7 @@ class PlacaController extends Controller
      */
     public function index()
     {
+        return $placas = Placa::orderBy('created_at', 'desc')->get();
         try {
             $placas = Placa::orderBy('created_at', 'desc')->get();
 

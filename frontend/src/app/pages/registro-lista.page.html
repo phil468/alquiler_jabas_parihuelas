@@ -26,34 +26,26 @@
     <ion-grid>
       <ion-row>
         <ion-col size="12" size-md="3">
-          <ion-item>
-            <ion-label position="floating">Fecha Inicio</ion-label>
-            <ion-datetime-button datetime="fecha-inicio"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime 
-                  id="fecha-inicio" 
-                  presentation="date" 
-                  [(ngModel)]="fechaInicio">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
+          <ion-item lines="none">
+            <ion-input 
+              label="Fecha Inicio" 
+              labelPlacement="stacked"
+              type="date"
+              [(ngModel)]="fechaInicio"
+              placeholder="Seleccione fecha">
+            </ion-input>
           </ion-item>
         </ion-col>
 
         <ion-col size="12" size-md="3">
-          <ion-item>
-            <ion-label position="floating">Fecha Fin</ion-label>
-            <ion-datetime-button datetime="fecha-fin"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime 
-                  id="fecha-fin" 
-                  presentation="date" 
-                  [(ngModel)]="fechaFin">
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
+          <ion-item lines="none">
+            <ion-input 
+              label="Fecha Fin" 
+              labelPlacement="stacked"
+              type="date"
+              [(ngModel)]="fechaFin"
+              placeholder="Seleccione fecha">
+            </ion-input>
           </ion-item>
         </ion-col>
 
@@ -123,6 +115,10 @@
             </ion-badge>
           </h2>
           <h3>{{ registro.cliente?.nombre }}</h3>
+          <p *ngIf="registro.representanteCliente || registro.representante_cliente">
+            <ion-icon name="person-outline"></ion-icon>
+            Rep: {{ registro.representanteCliente?.nombre || registro.representante_cliente }}
+          </p>
           <p>
             <ion-icon name="calendar-outline"></ion-icon>
             {{ registro.fecha | date:'dd/MM/yyyy' }} - {{ registro.hora }}
@@ -148,28 +144,54 @@
         <ion-icon 
           *ngIf="registro.imagen_path" 
           name="image-outline" 
-          slot="end" 
+          slot="end"
           color="primary"
+          size="large"
+          style="margin-right: 12px; cursor: pointer;"
           (click)="verImagen(registro.imagen_path); $event.stopPropagation()">
         </ion-icon>
 
-        <!-- Indicador de PDF -->
+        <!-- Botón de subir/ver PDF -->
         <ion-icon 
-          *ngIf="registro.pdf_path" 
-          name="document-outline" 
-          slot="end" 
-          color="secondary">
+          [name]="registro.pdf_path ? 'document-text' : 'cloud-upload-outline'" 
+          [color]="registro.pdf_path ? 'success' : 'medium'"
+          slot="end"
+          size="large"
+          style="margin-right: 12px; cursor: pointer;"
+          (click)="adjuntarPDF(registro); $event.stopPropagation()">
+        </ion-icon>
+
+        <!-- Botón Aprobar (solo si está por aprobar) -->
+        <ion-icon 
+          *ngIf="registro.estado === 'por_aprobar'"
+          name="checkmark-circle-outline" 
+          color="success"
+          slot="end"
+          size="large"
+          style="margin-right: 8px; cursor: pointer;"
+          (click)="aprobar(registro); $event.stopPropagation()">
+        </ion-icon>
+
+        <!-- Botón Rechazar (solo si está por aprobar) -->
+        <ion-icon 
+          *ngIf="registro.estado === 'por_aprobar'"
+          name="close-circle-outline" 
+          color="danger"
+          slot="end"
+          size="large"
+          style="cursor: pointer;"
+          (click)="rechazar(registro); $event.stopPropagation()">
         </ion-icon>
       </ion-item>
 
-      <ion-item-options side="end">
+      <!-- <ion-item-options side="end">
         <ion-item-option color="primary" (click)="registro.id && verDetalle(registro.id)">
           <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
         </ion-item-option>
         <ion-item-option color="success" (click)="cambiarEstado(registro)">
           <ion-icon slot="icon-only" name="checkmark-circle-outline"></ion-icon>
         </ion-item-option>
-      </ion-item-options>
+      </ion-item-options> -->
     </ion-item-sliding>
   </ion-list>
 

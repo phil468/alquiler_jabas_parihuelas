@@ -13,6 +13,8 @@ class Chofer extends Model
     protected $table = 'choferes';
 
     protected $fillable = [
+        'cliente_id',
+        'placa_principal_id',
         'nombre',
         'dni',
         'licencia',
@@ -28,6 +30,18 @@ class Chofer extends Model
     public function registros()
     {
         return $this->hasMany(Registro::class);
+    }
+
+    // Relación con cliente
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
+    }
+
+    // Relación con placa principal
+    public function placaPrincipal()
+    {
+        return $this->belongsTo(Placa::class, 'placa_principal_id');
     }
 
     // Scope para choferes activos

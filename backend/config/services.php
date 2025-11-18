@@ -35,6 +35,9 @@ return [
         'client_id' => env('MICROSOFT_CLIENT_ID'),
         'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
         'redirect' => env('MICROSOFT_REDIRECT_URI'),
+        'guzzle' => [
+            'verify' => env('APP_ENV') === 'production', // Solo verificar SSL en producción
+        ],
     ],
 
 ];

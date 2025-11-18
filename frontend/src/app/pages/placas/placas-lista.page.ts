@@ -98,6 +98,7 @@ export class PlacasListaPage implements OnInit {
     try {
       await this.apiService
         .updatePlaca(placa.id, {
+          numero_placa: placa.numero_placa,
           activo: !placa.activo,
         })
         .toPromise();
@@ -149,6 +150,6 @@ export class PlacasListaPage implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/configuracion']);
   }
 }

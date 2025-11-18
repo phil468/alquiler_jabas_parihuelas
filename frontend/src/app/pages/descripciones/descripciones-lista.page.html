@@ -2,13 +2,13 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-button (click)="volver()">
-        <ion-icon name="arrow-back-outline"></ion-icon>
+        <ion-icon name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Descripciones</ion-title>
+    <ion-title>Jabas</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="nuevo()">
-        <ion-icon name="add-outline"></ion-icon>
+        <ion-icon name="add"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -80,7 +80,7 @@
 
   <div *ngIf="!loading && descripcionesFiltradas.length === 0" class="empty-state">
     <ion-icon name="file-tray-outline" size="large"></ion-icon>
-    <p>No se encontraron descripciones</p>
+    <p>No se encontraron Jabas</p>
     <ion-button (click)="nuevo()">
       <ion-icon name="add-outline" slot="start"></ion-icon>
       Nueva Descripción
@@ -89,6 +89,6 @@
 
   <div *ngIf="loading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
-    <p>Cargando descripciones...</p>
+    <p>Cargando Jabas...</p>
   </div>
 </ion-content>

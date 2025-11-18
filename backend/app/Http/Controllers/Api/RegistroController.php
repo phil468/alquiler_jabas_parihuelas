@@ -26,7 +26,8 @@ class RegistroController extends Controller
             'placa2', 
             'descripcionJaba1', 
             'descripcionJaba2',
-            'usuario'
+            'usuario',
+            'representanteCliente',
         ]);
 
         // Filtros
@@ -66,7 +67,8 @@ class RegistroController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'cliente_id' => 'required|exists:clientes,id',
-            'representante_cliente' => 'required|string|max:255',
+            'representante_cliente_id' => 'nullable|exists:representantes_clientes,id',
+            'representante_cliente' => 'nullable|string|max:255',
             'chofer_id' => 'required|exists:choferes,id',
             'placa_1_id' => 'nullable|exists:placas,id',
             'cantidad_jabas_1' => 'required|integer|min:0',
@@ -87,8 +89,16 @@ class RegistroController extends Controller
             $data['numero_registro'] = Registro::generarNumeroRegistro();
             $data['fecha'] = Carbon::now()->toDateString();
             $data['hora'] = Carbon::now()->toTimeString();
-            $data['user_id'] = auth()->id();
+            $data['user_id'] = $request->user_id;
             $data['estado'] = 'por_aprobar';
+
+            // Si viene representante_cliente_id, copiar el nombre al campo legacy
+            if (isset($data['representante_cliente_id'])) {
+                $representante = \App\Models\RepresentanteCliente::find($data['representante_cliente_id']);
+                if ($representante) {
+                    $data['representante_cliente'] = $representante->nombre;
+                }
+            }
 
             // Guardar imagen
             if ($request->hasFile('imagen')) {
@@ -101,7 +111,7 @@ class RegistroController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Registro creado exitosamente',
-                'data' => $registro->load(['cliente', 'chofer', 'placa1', 'placa2'])
+                'data' => $registro->load(['cliente', 'chofer', 'placa1', 'placa2', 'representanteCliente'])
             ], 201);
 
         } catch (\Exception $e) {
@@ -118,7 +128,7 @@ class RegistroController extends Controller
      */
     public function show(string $id)
     {
-        $registro = Registro::with(['cliente', 'chofer', 'placa1', 'placa2', 'descripcionJaba1', 'descripcionJaba2', 'usuario'])->find($id);
+        $registro = Registro::with(['cliente', 'chofer', 'placa1', 'placa2', 'descripcionJaba1', 'descripcionJaba2', 'usuario', 'representanteCliente'])->find($id);
 
         if (!$registro) {
             return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
@@ -198,6 +208,114 @@ class RegistroController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Estado actualizado', 'data' => $registro]);
+    }
+
+    /**
+     * Adjuntar PDF y extraer número de guía de remisión
+     */
+    public function adjuntarPdf(Request $request, string $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'pdf' => 'required|file|mimes:pdf|max:10240', // Máximo 10MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $registro = Registro::find($id);
+        if (!$registro) {
+            return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
+        }
+
+        try {
+            // Guardar PDF
+            $path = $request->file('pdf')->store('registros/pdfs', 'public');
+            
+            // Intentar extraer número de guía de remisión del PDF
+            $guiaRemision = $this->extraerGuiaRemisionDePdf($request->file('pdf'));
+            
+            // Eliminar PDF anterior si existe
+            if ($registro->pdf_path) {
+                Storage::disk('public')->delete($registro->pdf_path);
+            }
+
+            // Actualizar registro
+            $registro->update([
+                'pdf_path' => $path,
+                'guia_remision' => $guiaRemision ?? $registro->guia_remision
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'PDF adjuntado exitosamente',
+                'data' => $registro->fresh(),
+                'guia_extraida' => $guiaRemision ? true : false
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar el PDF',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Extraer número de guía de remisión desde PDF
+     * Busca patrones comunes: TXXX-XXXXXXXX, XXX-XXXXXXX, etc.
+     */
+    private function extraerGuiaRemisionDePdf($pdfFile)
+    {
+        try {
+            // Leer contenido del archivo PDF como texto
+            $pdfPath = $pdfFile->getRealPath();
+            $content = file_get_contents($pdfPath);
+            
+            // Convertir a texto (simple extraction - puede no funcionar con todos los PDFs)
+            $text = '';
+            
+            // Intentar extraer texto usando shell_exec y pdftotext si está disponible
+            if (function_exists('shell_exec')) {
+                $output = shell_exec('pdftotext "' . $pdfPath . '" -');
+                if ($output) {
+                    $text = $output;
+                }
+            }
+            
+            // Si no se pudo extraer con pdftotext, intentar con regex directo en contenido
+            if (empty($text)) {
+                $text = $content;
+            }
+            
+            // Patrones comunes de guía de remisión
+            $patterns = [
+                '/GU[IÍ]A[\s:]+([T0-9]{1,4}[\s-]+[0-9]{6,8})/i',
+                '/REMISI[OÓ]N[\s:]+([T0-9]{1,4}[\s-]+[0-9]{6,8})/i',
+                '/N[UÚ]MERO[\s:]+([T0-9]{1,4}[\s-]+[0-9]{6,8})/i',
+                '/([T][0-9]{3}[\s-]+[0-9]{7,8})/i', // Ej: T001-00000123
+                '/([0-9]{3}[\s-]+[0-9]{7,8})/i', // Ej: 001-00000123
+            ];
+            
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $text, $matches)) {
+                    // Limpiar y formatear el número encontrado
+                    $guia = trim($matches[1]);
+                    $guia = preg_replace('/\s+/', '-', $guia); // Reemplazar espacios con guiones
+                    return $guia;
+                }
+            }
+            
+            return null;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error extrayendo guía de remisión: ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**

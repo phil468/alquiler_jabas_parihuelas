@@ -27,6 +27,26 @@
       </ion-card-header>
       <ion-card-content>
         <ion-item>
+          <ion-label position="stacked">Cliente</ion-label>
+          <ion-select formControlName="cliente_id" placeholder="Seleccione un cliente (opcional)">
+            <ion-select-option [value]="null">Sin asignar</ion-select-option>
+            <ion-select-option *ngFor="let cliente of clientes" [value]="cliente.id">
+              {{ cliente.nombre }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Placa Principal</ion-label>
+          <ion-select formControlName="placa_principal_id" placeholder="Seleccione placa (opcional)">
+            <ion-select-option [value]="null">Sin asignar</ion-select-option>
+            <ion-select-option *ngFor="let placa of placas" [value]="placa.id">
+              {{ placa.numero_placa }} - {{ placa.marca }} {{ placa.modelo }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
           <ion-label position="stacked">Nombre Completo <ion-text color="danger">*</ion-text></ion-label>
           <ion-input 
             formControlName="nombre" 

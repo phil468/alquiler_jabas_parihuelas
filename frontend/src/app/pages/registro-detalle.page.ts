@@ -9,7 +9,7 @@ import { ApiService, Registro } from '../services/api.service';
   templateUrl: './registro-detalle.page.html',
   styleUrls: ['./registro-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule],
 })
 export class RegistroDetallePage implements OnInit {
   registro: Registro | null = null;
@@ -32,7 +32,9 @@ export class RegistroDetallePage implements OnInit {
   async cargarRegistro() {
     this.loading = true;
     try {
-      const response = await this.apiService.getRegistro(this.registroId).toPromise();
+      const response = await this.apiService
+        .getRegistro(this.registroId)
+        .toPromise();
       this.registro = response?.data || null;
     } catch (error) {
       console.error('Error al cargar registro:', error);
@@ -42,95 +44,97 @@ export class RegistroDetallePage implements OnInit {
     }
   }
 
-  async cambiarEstado() {
+  async aprobar() {
     const alert = await this.alertController.create({
-      header: 'Cambiar Estado',
-      message: '¿Qué acción deseas realizar?',
+      header: 'Aprobar Registro',
+      message: '¿Estás seguro de aprobar este registro?',
       buttons: [
         {
           text: 'Cancelar',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
           text: 'Aprobar',
-          handler: () => {
-            this.aprobar();
-          }
+          handler: async () => {
+            try {
+              await this.apiService
+                .cambiarEstadoRegistro(this.registroId, 'aprobado')
+                .toPromise();
+
+              const successAlert = await this.alertController.create({
+                header: 'Éxito',
+                message: 'Registro aprobado correctamente',
+                buttons: ['OK'],
+              });
+              await successAlert.present();
+
+              this.cargarRegistro();
+            } catch (error) {
+              this.mostrarError('Error al aprobar el registro');
+            }
+          },
         },
-        {
-          text: 'Rechazar',
-          handler: () => {
-            this.rechazar();
-          }
-        }
-      ]
+      ],
     });
 
     await alert.present();
   }
 
-  async aprobar() {
-    try {
-      await this.apiService.cambiarEstadoRegistro(this.registroId, 'aprobado');
-      
-      const alert = await this.alertController.create({
-        header: 'Éxito',
-        message: 'Registro aprobado correctamente',
-        buttons: ['OK']
-      });
-      await alert.present();
-      
-      this.cargarRegistro();
-    } catch (error) {
-      this.mostrarError('Error al aprobar el registro');
-    }
-  }
-
   async rechazar() {
     const alert = await this.alertController.create({
       header: 'Rechazar Registro',
-      message: 'Indica el motivo del rechazo:',
+      message:
+        'Por favor, indica el motivo del rechazo. Este comentario será visible para el usuario que creó el registro.',
       inputs: [
         {
           name: 'motivo',
           type: 'textarea',
-          placeholder: 'Motivo del rechazo...'
-        }
+          placeholder: 'Ejemplo: Faltan firmas, datos incorrectos, etc.',
+          attributes: {
+            rows: 4,
+            maxlength: 500,
+          },
+        },
       ],
       buttons: [
         {
           text: 'Cancelar',
-          role: 'cancel'
+          role: 'cancel',
+          cssClass: 'secondary',
         },
         {
           text: 'Rechazar',
+          cssClass: 'danger',
           handler: async (data) => {
-            if (!data.motivo) {
-              this.mostrarError('Debes indicar un motivo');
+            if (!data.motivo || data.motivo.trim().length < 10) {
+              this.mostrarError('El motivo debe tener al menos 10 caracteres');
               return false;
             }
-            
+
             try {
-              await this.apiService.cambiarEstadoRegistro(this.registroId,
-                'rechazado',
-                data.motivo
-              );
-              
+              await this.apiService
+                .cambiarEstadoRegistro(
+                  this.registroId,
+                  'rechazado',
+                  data.motivo.trim()
+                )
+                .toPromise();
+
               const successAlert = await this.alertController.create({
-                header: 'Éxito',
-                message: 'Registro rechazado correctamente',
-                buttons: ['OK']
+                header: 'Registro Rechazado',
+                message: 'El registro ha sido rechazado correctamente',
+                buttons: ['OK'],
               });
               await successAlert.present();
-              
+
               this.cargarRegistro();
             } catch (error) {
               this.mostrarError('Error al rechazar el registro');
             }
             return true;
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -139,19 +143,26 @@ export class RegistroDetallePage implements OnInit {
   async verImagen() {
     if (this.registro?.imagen_path) {
       // TODO: Implementar modal para ver imagen
-      const imageUrl = `${this.apiService['apiUrl'].replace('/api/v1', '')}/storage/${this.registro.imagen_path}`;
+      const imageUrl = `${this.apiService['apiUrl'].replace(
+        '/api/v1',
+        ''
+      )}/storage/${this.registro.imagen_path}`;
       window.open(imageUrl, '_blank');
     }
   }
 
   async descargarPDF() {
     try {
-      const blob = await this.apiService.generarPdfRegistro(this.registroId).toPromise();
+      const blob = await this.apiService
+        .generarPdfRegistro(this.registroId)
+        .toPromise();
       if (blob) {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Registro_${this.registro?.numero_registro || this.registroId}.pdf`;
+        link.download = `Registro_${
+          this.registro?.numero_registro || this.registroId
+        }.pdf`;
         link.click();
         window.URL.revokeObjectURL(url);
       }
@@ -161,13 +172,68 @@ export class RegistroDetallePage implements OnInit {
   }
 
   async adjuntarPDF() {
-    // TODO: Implementar subida de PDF
-    this.mostrarError('Función en desarrollo');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.type !== 'application/pdf') {
+        this.mostrarError('Únicamente se permiten archivos PDF');
+        return;
+      }
+
+      // Confirmar adjuntar
+      const confirmAlert = await this.alertController.create({
+        header: 'Adjuntar Guía de Remisión',
+        message: `¿Deseas adjuntar el archivo "${file.name}"? El sistema intentará extraer automáticamente el número y serie de la guía.`,
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Adjuntar',
+            handler: async () => {
+              try {
+                const loadingAlert = await this.alertController.create({
+                  message: 'Subiendo PDF y extrayendo datos...',
+                  backdropDismiss: false,
+                });
+                await loadingAlert.present();
+
+                await this.apiService
+                  .adjuntarPdfRegistro(this.registroId, file)
+                  .toPromise();
+                await loadingAlert.dismiss();
+
+                const successAlert = await this.alertController.create({
+                  header: 'Éxito',
+                  message: 'PDF adjuntado y datos extraídos correctamente',
+                  buttons: ['OK'],
+                });
+                await successAlert.present();
+
+                this.cargarRegistro();
+              } catch (error) {
+                this.mostrarError('Error al adjuntar el PDF');
+              }
+            },
+          },
+        ],
+      });
+
+      await confirmAlert.present();
+    };
+
+    input.click();
   }
 
   async compartir() {
     // TODO: Implementar compartir
-    this.mostrarError('Función en desarrollo');
+    // this.mostrarError('Función en desarrollo');
   }
 
   async eliminar() {
@@ -177,7 +243,7 @@ export class RegistroDetallePage implements OnInit {
       buttons: [
         {
           text: 'Cancelar',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
           text: 'Eliminar',
@@ -185,21 +251,21 @@ export class RegistroDetallePage implements OnInit {
           handler: async () => {
             try {
               await this.apiService.deleteRegistro(this.registroId);
-              
+
               const successAlert = await this.alertController.create({
                 header: 'Éxito',
                 message: 'Registro eliminado correctamente',
-                buttons: ['OK']
+                buttons: ['OK'],
               });
               await successAlert.present();
-              
+
               this.router.navigate(['/registro-lista']);
             } catch (error) {
               this.mostrarError('Error al eliminar el registro');
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -235,12 +301,19 @@ export class RegistroDetallePage implements OnInit {
     const alert = await this.alertController.create({
       header: 'Error',
       message: mensaje,
-      buttons: ['OK']
+      buttons: ['OK'],
     });
     await alert.present();
   }
 
   volver() {
     this.router.navigate(['/registro-lista']);
+  }
+
+  getImageUrl(imagePath: string): string {
+    return `${this.apiService['apiUrl'].replace(
+      '/api/v1',
+      ''
+    )}/storage/${imagePath}`;
   }
 }

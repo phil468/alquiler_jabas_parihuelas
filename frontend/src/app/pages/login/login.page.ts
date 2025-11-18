@@ -46,7 +46,7 @@ export class LoginPage implements OnInit {
   ngOnInit() {
     // Si ya está autenticado, redirigir al home
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/home'], { replaceUrl: true });
     }
   }
 
@@ -69,7 +69,7 @@ export class LoginPage implements OnInit {
       next: async (response) => {
         await loading.dismiss();
         if (response.success) {
-          this.router.navigate(['/home']);
+          this.router.navigate(['/home'], { replaceUrl: true });
         }
       },
       error: async (error) => {
@@ -116,7 +116,7 @@ export class LoginPage implements OnInit {
         next: async (response) => {
           await loading.dismiss();
           if (response.success) {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/home'], { replaceUrl: true });
           }
         },
         error: async (error) => {

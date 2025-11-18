@@ -24,13 +24,41 @@ class Cliente extends Model
         'activo' => 'boolean',
     ];
 
-    // Relación con registros
+    /**
+     * Relación con Registros
+     */
     public function registros()
     {
         return $this->hasMany(Registro::class);
     }
 
-    // Scope para clientes activos
+    /**
+     * Relación con Representantes
+     */
+    public function representantes()
+    {
+        return $this->hasMany(RepresentanteCliente::class);
+    }
+
+    /**
+     * Obtener el representante activo
+     */
+    public function representanteActivo()
+    {
+        return $this->hasOne(RepresentanteCliente::class)->where('activo', true);
+    }
+
+    /**
+     * Relación con Choferes
+     */
+    public function choferes()
+    {
+        return $this->hasMany(Chofer::class);
+    }
+
+    /**
+     * Scope para clientes activos
+     */
     public function scopeActivos($query)
     {
         return $query->where('activo', true);

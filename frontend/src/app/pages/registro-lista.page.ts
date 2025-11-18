@@ -1,21 +1,89 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonBackButton,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonSearchbar,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonRefresher,
+  IonRefresherContent,
+  IonSpinner,
+  IonList,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonBadge,
+  IonFab,
+  IonFabButton,
+  IonText,
+  IonModal,
+  ModalController,
+  AlertController,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { ApiService, Registro } from '../services/api.service';
+import { ImageViewerModalComponent } from '../components/image-viewer-modal.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-registro-lista',
   templateUrl: './registro-lista.page.html',
   styleUrls: ['./registro-lista.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonBackButton,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonSearchbar,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    IonRefresher,
+    IonRefresherContent,
+    IonSpinner,
+    IonList,
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
+    IonBadge,
+    IonFab,
+    IonFabButton,
+    IonText,
+    IonModal,
+  ],
 })
 export class RegistroListaPage implements OnInit {
   registros: Registro[] = [];
   registrosFiltrados: Registro[] = [];
   loading = false;
+  isLoadingData = false; // Flag para evitar llamadas múltiples
 
   // Filtros
   fechaInicio: string = '';
@@ -32,10 +100,20 @@ export class RegistroListaPage implements OnInit {
   totalPages = 1;
   perPage = 15;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+    private modalCtrl: ModalController,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.cargarClientes();
+  }
+
+  ionViewWillEnter() {
     this.cargarRegistros();
   }
 
@@ -43,11 +121,11 @@ export class RegistroListaPage implements OnInit {
     try {
       this.apiService.getClientesActivos().subscribe({
         next: (response) => {
-          this.clientes = response;
+          this.clientes = response.data || [];
         },
         error: (error) => {
           console.error('Error al cargar clientes:', error);
-        }
+        },
       });
     } catch (error) {
       console.error('Error al cargar clientes:', error);
@@ -55,36 +133,60 @@ export class RegistroListaPage implements OnInit {
   }
 
   cargarRegistros() {
-    this.loading = true;
-    try {
-      const filtros: any = {
-        per_page: this.perPage,
-        page: this.currentPage,
-      };
-
-      if (this.fechaInicio) filtros.fecha_inicio = this.fechaInicio;
-      if (this.fechaFin) filtros.fecha_fin = this.fechaFin;
-      if (this.clienteId) filtros.cliente_id = this.clienteId;
-      if (this.estado) filtros.estado = this.estado;
-      if (this.searchTerm) filtros.search = this.searchTerm;
-
-      this.apiService.getRegistros(filtros).subscribe({
-        next: (response) => {
-          this.registros = response.data;
-          this.registrosFiltrados = this.registros;
-          this.totalPages = response.last_page;
-          this.currentPage = response.current_page;
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error al cargar registros:', error);
-          this.loading = false;
-        }
-      });
-    } catch (error) {
-      console.error('Error al cargar registros:', error);
-      this.loading = false;
+    // Evitar llamadas múltiples simultáneas
+    if (this.isLoadingData) {
+      console.log('Ya hay una carga en proceso, omitiendo...');
+      return;
     }
+
+    this.isLoadingData = true;
+    this.loading = true;
+
+    const filtros: any = {
+      per_page: this.perPage,
+      page: this.currentPage,
+    };
+
+    // Formatear fechas correctamente (extraer solo YYYY-MM-DD)
+    if (this.fechaInicio) {
+      const fecha = new Date(this.fechaInicio);
+      filtros.fecha_inicio = fecha.toISOString().split('T')[0];
+    }
+    if (this.fechaFin) {
+      const fecha = new Date(this.fechaFin);
+      filtros.fecha_fin = fecha.toISOString().split('T')[0];
+    }
+    if (this.clienteId) filtros.cliente_id = this.clienteId;
+    if (this.estado) filtros.estado = this.estado;
+    if (this.searchTerm) filtros.search = this.searchTerm;
+
+    console.log('Cargando registros con filtros:', filtros);
+
+    this.apiService.getRegistros(filtros).subscribe({
+      next: (response) => {
+        console.log('Respuesta de registros:', response);
+        this.registros = response.data || [];
+        this.registrosFiltrados = [...this.registros];
+        this.totalPages = response.last_page || 1;
+        this.currentPage = response.current_page || 1;
+        console.log('Registros cargados:', this.registros.length);
+
+        // Liberar flags y forzar detección de cambios
+        this.loading = false;
+        this.isLoadingData = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error al cargar registros:', error);
+        this.registros = [];
+        this.registrosFiltrados = [];
+
+        // Liberar flags y forzar detección de cambios
+        this.loading = false;
+        this.isLoadingData = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   aplicarFiltros() {
@@ -147,17 +249,190 @@ export class RegistroListaPage implements OnInit {
     console.log('Cambiar estado:', registro);
   }
 
+  async aprobar(registro: Registro) {
+    const alert = await this.alertCtrl.create({
+      header: 'Aprobar Registro',
+      message: `¿Estás seguro de aprobar el registro ${registro.numero_registro}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Aprobar',
+          handler: async () => {
+            try {
+              if (registro.id) {
+                await this.apiService
+                  .cambiarEstadoRegistro(registro.id, 'aprobado')
+                  .toPromise();
+
+                const toast = await this.toastCtrl.create({
+                  message: 'Registro aprobado correctamente',
+                  duration: 2000,
+                  color: 'success',
+                  position: 'top',
+                });
+                await toast.present();
+
+                this.aplicarFiltros();
+                // this.cargarRegistros(); // Recargar lista
+              }
+            } catch (error) {
+              const toast = await this.toastCtrl.create({
+                message: 'Error al aprobar el registro',
+                duration: 3000,
+                color: 'danger',
+                position: 'top',
+              });
+              await toast.present();
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async rechazar(registro: Registro) {
+    const alert = await this.alertCtrl.create({
+      header: 'Rechazar Registro',
+      message:
+        'Por favor, indica el motivo del rechazo. Este comentario será visible para el usuario que creó el registro.',
+      inputs: [
+        {
+          name: 'motivo',
+          type: 'textarea',
+          placeholder: 'Ejemplo: Faltan firmas, datos incorrectos, etc.',
+          attributes: {
+            rows: 4,
+            maxlength: 500,
+          },
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Rechazar',
+          cssClass: 'danger',
+          handler: async (data) => {
+            if (!data.motivo || data.motivo.trim().length < 10) {
+              const toast = await this.toastCtrl.create({
+                message: 'El motivo debe tener al menos 10 caracteres',
+                duration: 3000,
+                color: 'warning',
+                position: 'top',
+              });
+              await toast.present();
+              return false;
+            }
+
+            try {
+              if (registro.id) {
+                await this.apiService
+                  .cambiarEstadoRegistro(
+                    registro.id,
+                    'rechazado',
+                    data.motivo.trim()
+                  )
+                  .toPromise();
+
+                const toast = await this.toastCtrl.create({
+                  message: 'Registro rechazado correctamente',
+                  duration: 2000,
+                  color: 'success',
+                  position: 'top',
+                });
+                await toast.present();
+                this.aplicarFiltros();
+                // this.cargarRegistros(); // Recargar lista
+              }
+            } catch (error) {
+              const toast = await this.toastCtrl.create({
+                message: 'Error al rechazar el registro',
+                duration: 3000,
+                color: 'danger',
+                position: 'top',
+              });
+              await toast.present();
+            }
+            return true;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
   async verImagen(imagePath: string) {
-    // Se implementará para abrir la imagen en modal
-    console.log('Ver imagen:', imagePath);
+    // Construir URL completa de la imagen
+    const imageUrl = `${environment.apiUrl.replace(
+      '/api/v1',
+      ''
+    )}/storage/${imagePath}`;
+
+    const modal = await this.modalCtrl.create({
+      component: ImageViewerModalComponent,
+      componentProps: {
+        imageUrl: imageUrl,
+      },
+      cssClass: 'image-viewer-modal',
+    });
+
+    await modal.present();
+  }
+
+  async adjuntarPDF(registro: Registro) {
+    // Crear input file dinámicamente
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.type !== 'application/pdf') {
+        alert('Únicamente se permiten archivos PDF');
+        return;
+      }
+
+      try {
+        if (registro.id) {
+          await this.apiService
+            .adjuntarPdfRegistro(registro.id, file)
+            .toPromise();
+          alert('PDF adjuntado exitosamente. Extrayendo datos...');
+          this.cargarRegistros(); // Recargar para ver cambios
+        }
+      } catch (error) {
+        console.error('Error al adjuntar PDF:', error);
+        alert('Error al adjuntar el PDF');
+      }
+    };
+
+    input.click();
   }
 
   async exportarExcel() {
     try {
       const filtros: any = {};
 
-      if (this.fechaInicio) filtros.fecha_inicio = this.fechaInicio;
-      if (this.fechaFin) filtros.fecha_fin = this.fechaFin;
+      // Formatear fechas correctamente
+      if (this.fechaInicio) {
+        const fecha = new Date(this.fechaInicio);
+        filtros.fecha_inicio = fecha.toISOString().split('T')[0];
+      }
+      if (this.fechaFin) {
+        const fecha = new Date(this.fechaFin);
+        filtros.fecha_fin = fecha.toISOString().split('T')[0];
+      }
       if (this.clienteId) filtros.cliente_id = this.clienteId;
       if (this.estado) filtros.estado = this.estado;
 
@@ -200,9 +475,9 @@ export class RegistroListaPage implements OnInit {
   }
 }
 
-  // doRefresh(event: any) {
-  //   this.cargarRegistros().then(() => {
-  //     event.target.complete();
-  //   });
-  // }
+// doRefresh(event: any) {
+//   this.cargarRegistros().then(() => {
+//     event.target.complete();
+//   });
+// }
 // }

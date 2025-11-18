@@ -17,6 +17,7 @@ class Registro extends Model
         'hora',
         'cliente_id',
         'representante_cliente',
+        'representante_cliente_id',
         'chofer_id',
         'placa_1_id',
         'placa_2_id',
@@ -80,6 +81,11 @@ class Registro extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function representanteCliente()
+    {
+        return $this->belongsTo(RepresentanteCliente::class, 'representante_cliente_id');
+    }
+
     // Scopes
     public function scopePorAprobar($query)
     {
@@ -105,7 +111,7 @@ class Registro extends Model
     public static function generarNumeroRegistro()
     {
         $fecha = Carbon::now();
-        $prefijo = $fecha->format('dm'); // Formato: 2508 (día-mes)
+        $prefijo = $fecha->format('dmy'); // Formato: 2508 (día-mes)
         
         // Obtener el último registro del día
         $ultimoRegistro = self::whereDate('fecha', $fecha->toDateString())

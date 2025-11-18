@@ -12,10 +12,17 @@ class ChoferController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $choferes = Chofer::orderBy('created_at', 'desc')->get();
+            $query = Chofer::with(['cliente', 'placaPrincipal']);
+
+            // Filtrar por cliente si se proporciona
+            if ($request->has('cliente_id')) {
+                $query->where('cliente_id', $request->cliente_id);
+            }
+
+            $choferes = $query->orderBy('created_at', 'desc')->get();
 
             return response()->json([
                 'success' => true,
@@ -32,12 +39,18 @@ class ChoferController extends Controller
     /**
      * Get only active drivers.
      */
-    public function activos()
+    public function activos(Request $request)
     {
         try {
-            $choferes = Chofer::where('activo', true)
-                ->orderBy('nombre', 'asc')
-                ->get();
+            $query = Chofer::with(['cliente', 'placaPrincipal'])
+                ->where('activo', true);
+            
+            // Filtrar por cliente si se proporciona
+            if ($request->has('cliente_id')) {
+                $query->where('cliente_id', $request->cliente_id);
+            }
+
+            $choferes = $query->orderBy('nombre', 'asc')->get();
 
             return response()->json([
                 'success' => true,
@@ -57,6 +70,8 @@ class ChoferController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'placa_principal_id' => 'nullable|exists:placas,id',
             'nombre' => 'required|string|max:255',
             'dni' => 'required|string|size:8|unique:choferes,dni',
             'licencia' => 'nullable|string|max:20',
@@ -94,7 +109,7 @@ class ChoferController extends Controller
     public function show(string $id)
     {
         try {
-            $chofer = Chofer::find($id);
+            $chofer = Chofer::with(['cliente', 'placaPrincipal'])->find($id);
 
             if (!$chofer) {
                 return response()->json([

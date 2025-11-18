@@ -44,8 +44,8 @@ export class DescripcionesListaPage implements OnInit {
         this.aplicarFiltros();
       }
     } catch (error) {
-      console.error('Error al cargar descripciones:', error);
-      this.mostrarError('Error al cargar las descripciones');
+      console.error('Error al cargar jabas:', error);
+      this.mostrarError('Error al cargar las jabas');
     } finally {
       this.loading = false;
     }
@@ -163,6 +163,6 @@ export class DescripcionesListaPage implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/configuracion']);
   }
 }

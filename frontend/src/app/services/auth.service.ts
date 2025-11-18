@@ -38,7 +38,9 @@ export class AuthService {
 
   private loadStoredUser() {
     const token = this.getToken();
-    const userStr = localStorage.getItem(this.userKey);
+    // Buscar en ambos lugares (auth_user y user)
+    const userStr =
+      localStorage.getItem(this.userKey) || localStorage.getItem('user');
 
     if (token && userStr) {
       try {
@@ -100,13 +102,34 @@ export class AuthService {
       );
   }
 
-  logout(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/logout`, {}).pipe(
-      tap(() => {
-        this.clearAuth();
-        this.router.navigate(['/login']);
-      })
-    );
+  async logout(): Promise<void> {
+    console.log('[AuthService] logout() - START');
+
+    try {
+      // Limpiar localmente primero
+      console.log('[AuthService] Calling clearAuth()');
+      this.clearAuth();
+      console.log('[AuthService] clearAuth() - COMPLETED');
+
+      // Redirigir al login sin historial (para evitar volver atrás)
+      console.log('[AuthService] Navigating to /login with replaceUrl: true');
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      console.log('[AuthService] Navigation to /login COMPLETED');
+
+      // Notificar al backend DESPUÉS de navegar (no bloqueante)
+      console.log('[AuthService] Sending logout request to backend');
+      this.http.post<AuthResponse>(`${this.apiUrl}/auth/logout`, {}).subscribe({
+        next: () => console.log('[AuthService] Logout exitoso en el servidor'),
+        error: (error) =>
+          console.error('[AuthService] Error en logout del servidor:', error),
+      });
+    } catch (error) {
+      console.error('[AuthService] Error in logout():', error);
+      // Asegurar que llegue a login incluso si hay error
+      await this.router.navigate(['/login'], { replaceUrl: true });
+    }
+
+    console.log('[AuthService] logout() - END');
   }
 
   getMe(): Observable<AuthResponse> {
@@ -124,8 +147,11 @@ export class AuthService {
   }
 
   private setAuth(user: User, token: string): void {
+    // Guardar en ambos formatos para compatibilidad
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSubject.next(user);
   }
 
@@ -134,17 +160,64 @@ export class AuthService {
   }
 
   private clearAuth(): void {
+    console.log('[AuthService] clearAuth() - START');
+    console.log('[AuthService] localStorage BEFORE clear:', {
+      auth_token: localStorage.getItem(this.tokenKey),
+      auth_user: localStorage.getItem(this.userKey),
+      token: localStorage.getItem('token'),
+      user: localStorage.getItem('user'),
+    });
+
+    // Limpiar todas las claves posibles
+    console.log('[AuthService] Removing', this.tokenKey);
     localStorage.removeItem(this.tokenKey);
+    console.log('[AuthService] Removing', this.userKey);
     localStorage.removeItem(this.userKey);
+    console.log('[AuthService] Removing token');
+    localStorage.removeItem('token');
+    console.log('[AuthService] Removing user');
+    localStorage.removeItem('user');
+
+    console.log('[AuthService] localStorage AFTER clear:', {
+      auth_token: localStorage.getItem(this.tokenKey),
+      auth_user: localStorage.getItem(this.userKey),
+      token: localStorage.getItem('token'),
+      user: localStorage.getItem('user'),
+    });
+
+    console.log('[AuthService] Setting currentUserSubject to null');
     this.currentUserSubject.next(null);
+    console.log(
+      '[AuthService] currentUserSubject value:',
+      this.currentUserSubject.value
+    );
+    console.log('[AuthService] clearAuth() - COMPLETED');
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    // Buscar en ambos lugares (auth_token y token)
+    return localStorage.getItem(this.tokenKey) || localStorage.getItem('token');
   }
 
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    if (this.currentUserSubject.value) {
+      return this.currentUserSubject.value;
+    }
+
+    // Si no hay en memoria, buscar en localStorage
+    const userStr =
+      localStorage.getItem(this.userKey) || localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        this.currentUserSubject.next(user);
+        return user;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    return null;
   }
 
   isAuthenticated(): boolean {

@@ -116,10 +116,10 @@ class DashboardController extends Controller
 
             // Estadísticas de cantidades
             $estadisticasCantidades = [
-                'total_entregado' => Registro::sum('cantidad_entregada') ?? 0,
-                'total_recibido' => Registro::sum('cantidad_recibida') ?? 0,
-                'promedio_entregado' => round(Registro::avg('cantidad_entregada') ?? 0, 2),
-                'promedio_recibido' => round(Registro::avg('cantidad_recibida') ?? 0, 2),
+                'total_jabas' => Registro::sum('cantidad_jabas_1')+Registro::sum('cantidad_jabas_2') ?? 0,
+                'total_parihuelas' => Registro::sum('cantidad_parihuelas') ?? 0,
+                'promedio_jabas' => round(Registro::avg('cantidad_jabas_1') ?? 0, 2),
+                'promedio_parihuelas' => round(Registro::avg('cantidad_parihuelas') ?? 0, 2),
             ];
 
             return response()->json([

@@ -19,11 +19,12 @@
 }
 
 .canvas-wrapper {
-  border: 2px dashed var(--ion-color-medium);
+  border: 2px solid var(--ion-color-medium);
   border-radius: 8px;
-  background: white;
+  background: #ffffff;
   margin-bottom: 20px;
   overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .firma-canvas {
@@ -32,6 +33,7 @@
   display: block;
   touch-action: none;
   cursor: crosshair;
+  background: #ffffff;
 }
 
 .firma-actions {

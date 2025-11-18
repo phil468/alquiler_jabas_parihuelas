@@ -13,6 +13,8 @@ import {
   IonCardTitle,
   IonCardContent,
   IonIcon,
+  IonButtons,
+  IonMenuButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { addCircle, list, settings, statsChart } from 'ionicons/icons';
@@ -35,6 +37,8 @@ import { addCircle, list, settings, statsChart } from 'ionicons/icons';
     IonCardTitle,
     IonCardContent,
     IonIcon,
+    IonButtons,
+    IonMenuButton,
   ],
 })
 export class HomePage {

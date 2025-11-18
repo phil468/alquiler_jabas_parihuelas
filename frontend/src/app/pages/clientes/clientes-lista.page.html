@@ -42,7 +42,12 @@
               {{ cliente.activo ? 'Activo' : 'Inactivo' }}
             </ion-badge>
           </h2>
-          <p>Código: {{ cliente.codigo }}</p>
+          <p *ngIf="cliente.representante_activo">
+            <ion-icon name="person-outline"></ion-icon>
+            {{ cliente.representante_activo.nombre }}
+            <span *ngIf="cliente.representante_activo.cargo"> - {{ cliente.representante_activo.cargo }}</span>
+          </p>
+          <p>Código: {{ cliente.codigo || 'N/A' }}</p>
           <p *ngIf="cliente.ruc">RUC: {{ cliente.ruc }}</p>
           <p *ngIf="cliente.telefono">
             <ion-icon name="call-outline"></ion-icon>

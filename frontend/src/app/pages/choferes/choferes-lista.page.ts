@@ -26,13 +26,18 @@ export class ChoferesListaPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    // El cargarChoferes() se ejecutará en ionViewWillEnter()
+  }
+
+  ionViewWillEnter() {
     this.cargarChoferes();
   }
 
   async cargarChoferes() {
     this.loading = true;
     try {
-      this.choferes = (await this.apiService.getChoferes().toPromise()) || [];
+      const response = await this.apiService.getChoferes().toPromise();
+      this.choferes = response?.data || [];
       this.choferesFiltrados = [...this.choferes];
     } catch (error) {
       console.error('Error al cargar choferes:', error);
@@ -98,6 +103,8 @@ export class ChoferesListaPage implements OnInit {
     try {
       await this.apiService
         .updateChofer(chofer.id, {
+          dni: chofer.dni,
+          nombre: chofer.nombre,
           activo: !chofer.activo,
         })
         .toPromise();
@@ -136,6 +143,6 @@ export class ChoferesListaPage implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/configuracion']);
   }
 }

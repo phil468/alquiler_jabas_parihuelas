@@ -35,3 +35,37 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/**
+ * Custom Styles
+ * -----------------------------------------------------
+ */
+
+/* Modal de Firma */
+.firma-modal {
+  --width: 90%;
+  --max-width: 600px;
+  --height: auto;
+  --border-radius: 16px;
+}
+
+/* Modal de Visor de Imágenes */
+.image-viewer-modal {
+  --width: 95%;
+  --max-width: 1200px;
+  --height: 90%;
+  --border-radius: 8px;
+}
+
+@media (max-width: 576px) {
+  .firma-modal {
+    --width: 95%;
+    --height: auto;
+  }
+
+  .image-viewer-modal {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+  }
+}

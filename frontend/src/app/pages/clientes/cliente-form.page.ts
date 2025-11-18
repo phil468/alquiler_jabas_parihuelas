@@ -5,10 +5,15 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormArray,
 } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ApiService, Cliente } from '../../services/api.service';
+import {
+  ApiService,
+  Cliente,
+  RepresentanteCliente,
+} from '../../services/api.service';
 import { AlertController } from '@ionic/angular';
 
 @Component({
@@ -23,6 +28,9 @@ export class ClienteFormPage implements OnInit {
   clienteId: number | null = null;
   isEditMode = false;
   loading = false;
+  representantes: RepresentanteCliente[] = [];
+  mostrarFormRepresentante = false;
+  representanteEditandoId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -32,13 +40,20 @@ export class ClienteFormPage implements OnInit {
     private alertController: AlertController
   ) {
     this.clienteForm = this.fb.group({
-      codigo: ['', [Validators.required, Validators.maxLength(20)]],
+      codigo: ['', [Validators.maxLength(20)]],
       nombre: ['', [Validators.required, Validators.maxLength(255)]],
       ruc: ['', [Validators.pattern(/^\d{11}$/)]],
       direccion: ['', [Validators.maxLength(255)]],
       telefono: ['', [Validators.maxLength(20)]],
       email: ['', [Validators.email, Validators.maxLength(255)]],
       activo: [true],
+      // Formulario temporal para representante
+      representante_nombre: [''],
+      representante_dni: ['', [Validators.pattern(/^\d{8}$/)]],
+      representante_telefono: [''],
+      representante_email: ['', [Validators.email]],
+      representante_cargo: [''],
+      representante_activo: [true],
     });
   }
 
@@ -61,6 +76,8 @@ export class ClienteFormPage implements OnInit {
         .toPromise();
       if (response?.data) {
         this.clienteForm.patchValue(response.data);
+        // Cargar representantes del cliente
+        await this.cargarRepresentantes();
       }
     } catch (error) {
       console.error('Error al cargar cliente:', error);
@@ -188,12 +205,138 @@ export class ClienteFormPage implements OnInit {
       return 'Email inválido';
     }
     if (control.errors['pattern']) {
-      return 'RUC debe tener 11 dígitos';
+      if (field === 'ruc') return 'RUC debe tener 11 dígitos';
+      if (field === 'representante_dni') return 'DNI debe tener 8 dígitos';
+      return 'Formato inválido';
     }
     if (control.errors['maxLength']) {
       return 'Longitud máxima excedida';
     }
 
     return '';
+  }
+
+  // ========== REPRESENTANTES ==========
+  async cargarRepresentantes() {
+    if (!this.clienteId) return;
+
+    try {
+      const response = await this.apiService
+        .getRepresentantesClientes(this.clienteId)
+        .toPromise();
+      if (response?.data) {
+        this.representantes = response.data;
+      }
+    } catch (error) {
+      console.error('Error al cargar representantes:', error);
+    }
+  }
+
+  mostrarAgregarRepresentante() {
+    this.mostrarFormRepresentante = true;
+    this.representanteEditandoId = null;
+    this.clienteForm.patchValue({
+      representante_nombre: '',
+      representante_dni: '',
+      representante_telefono: '',
+      representante_email: '',
+      representante_cargo: '',
+      representante_activo: true,
+    });
+  }
+
+  editarRepresentante(representante: RepresentanteCliente) {
+    this.mostrarFormRepresentante = true;
+    this.representanteEditandoId = representante.id;
+    this.clienteForm.patchValue({
+      representante_nombre: representante.nombre,
+      representante_dni: representante.dni,
+      representante_telefono: representante.telefono,
+      representante_email: representante.email,
+      representante_cargo: representante.cargo,
+      representante_activo: representante.activo,
+    });
+  }
+
+  cancelarRepresentante() {
+    this.mostrarFormRepresentante = false;
+    this.representanteEditandoId = null;
+  }
+
+  async guardarRepresentante() {
+    if (!this.clienteId) {
+      this.mostrarError('Primero debes guardar el cliente');
+      return;
+    }
+
+    const nombre = this.clienteForm.get('representante_nombre')?.value;
+    if (!nombre || nombre.trim() === '') {
+      this.mostrarError('El nombre del representante es obligatorio');
+      return;
+    }
+
+    const data: Partial<RepresentanteCliente> = {
+      cliente_id: this.clienteId,
+      nombre: this.clienteForm.get('representante_nombre')?.value,
+      dni: this.clienteForm.get('representante_dni')?.value,
+      telefono: this.clienteForm.get('representante_telefono')?.value,
+      email: this.clienteForm.get('representante_email')?.value,
+      cargo: this.clienteForm.get('representante_cargo')?.value,
+      activo: this.clienteForm.get('representante_activo')?.value,
+    };
+
+    try {
+      if (this.representanteEditandoId) {
+        await this.apiService
+          .updateRepresentanteCliente(this.representanteEditandoId, data)
+          .toPromise();
+      } else {
+        await this.apiService.createRepresentanteCliente(data).toPromise();
+      }
+
+      await this.cargarRepresentantes();
+      this.cancelarRepresentante();
+    } catch (error) {
+      console.error('Error al guardar representante:', error);
+      this.mostrarError('Error al guardar el representante');
+    }
+  }
+
+  async eliminarRepresentante(id: number) {
+    const alert = await this.alertController.create({
+      header: 'Confirmar',
+      message: '¿Deseas eliminar este representante?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.apiService.deleteRepresentanteCliente(id).toPromise();
+              await this.cargarRepresentantes();
+            } catch (error) {
+              console.error('Error al eliminar representante:', error);
+              this.mostrarError('Error al eliminar el representante');
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async activarRepresentante(id: number) {
+    try {
+      await this.apiService.activarRepresentanteCliente(id).toPromise();
+      await this.cargarRepresentantes();
+    } catch (error) {
+      console.error('Error al activar representante:', error);
+      this.mostrarError('Error al activar el representante');
+    }
   }
 }

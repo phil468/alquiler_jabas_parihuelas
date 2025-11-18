@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ApiService, Chofer } from '../../services/api.service';
+import { ApiService, Chofer, Cliente, Placa } from '../../services/api.service';
 import { AlertController } from '@ionic/angular';
 
 @Component({
@@ -23,6 +23,8 @@ export class ChoferFormPage implements OnInit {
   choferId: number | null = null;
   isEditMode = false;
   loading = false;
+  clientes: Cliente[] = [];
+  placas: Placa[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -32,6 +34,8 @@ export class ChoferFormPage implements OnInit {
     private alertController: AlertController
   ) {
     this.choferForm = this.fb.group({
+      cliente_id: [''],
+      placa_principal_id: [''],
       nombre: ['', [Validators.required, Validators.maxLength(255)]],
       dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
       licencia: ['', [Validators.maxLength(20)]],
@@ -41,11 +45,26 @@ export class ChoferFormPage implements OnInit {
   }
 
   ngOnInit() {
+    this.loadData();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.choferId = parseInt(id);
       this.isEditMode = true;
       this.cargarChofer();
+    }
+  }
+
+  async loadData() {
+    try {
+      const clientesRes = await this.apiService
+        .getClientesActivos()
+        .toPromise();
+      this.clientes = clientesRes?.data || [];
+
+      const placasRes = await this.apiService.getPlacasActivas().toPromise();
+      this.placas = placasRes?.data || [];
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
     }
   }
 
