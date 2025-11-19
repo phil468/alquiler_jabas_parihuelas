@@ -6,8 +6,8 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { IonicModule, MenuController } from '@ionic/angular';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 
@@ -27,9 +27,14 @@ export class LoginPage implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private alertController: AlertController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private menuCtrl: MenuController
   ) {
+    // Deshabilitar menú inmediatamente
+    this.menuCtrl.enable(false);
+
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -48,6 +53,38 @@ export class LoginPage implements OnInit {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/home'], { replaceUrl: true });
     }
+
+    // Verificar si hay un error en la URL
+    this.route.queryParams.subscribe((params) => {
+      if (params['error']) {
+        this.mostrarError(decodeURIComponent(params['error']));
+        // Limpiar el parámetro de la URL
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
+      }
+    });
+  }
+
+  ionViewWillEnter() {
+    // Deshabilitar el menú lateral en la página de login
+    this.menuCtrl.enable(false);
+  }
+
+  ionViewWillLeave() {
+    // Habilitar el menú lateral al salir de la página de login
+    this.menuCtrl.enable(true);
+  }
+
+  async mostrarError(mensaje: string) {
+    const alert = await this.alertController.create({
+      header: 'Error de Acceso',
+      message: mensaje,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   async login() {
@@ -74,12 +111,7 @@ export class LoginPage implements OnInit {
       },
       error: async (error) => {
         await loading.dismiss();
-        const alert = await this.alertController.create({
-          header: 'Error',
-          message: error.error?.message || 'Error al iniciar sesión',
-          buttons: ['OK'],
-        });
-        await alert.present();
+        this.mostrarError(error.error?.message || 'Error al iniciar sesión');
       },
     });
   }

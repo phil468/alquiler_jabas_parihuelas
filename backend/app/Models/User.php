@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'microsoft_id',
         'avatar',
+        'activo',
     ];
 
     /**
@@ -43,5 +44,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'activo' => 'boolean',
     ];
 }

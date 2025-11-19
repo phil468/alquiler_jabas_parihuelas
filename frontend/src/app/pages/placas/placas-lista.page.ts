@@ -26,6 +26,9 @@ export class PlacasListaPage implements OnInit {
   ) {}
 
   ngOnInit() {
+  }
+
+  ionViewWillEnter() {
     this.cargarPlacas();
   }
 

@@ -94,6 +94,11 @@ export class AppComponent {
       url: '/descripciones',
       icon: 'cube',
     },
+    {
+      title: 'Usuarios',
+      url: '/usuarios',
+      icon: 'person-circle',
+    },
   ];
 
   constructor(
@@ -105,6 +110,12 @@ export class AppComponent {
     this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
+  }
+
+  get isLoginPage(): boolean {
+    return (
+      this.router.url === '/login' || this.router.url.startsWith('/login?')
+    );
   }
 
   async logout() {

@@ -6,6 +6,11 @@
       </ion-button>
     </ion-buttons>
     <ion-title>{{ isEditMode ? 'Editar Placa' : 'Nueva Placa' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="guardar()" [disabled]="loading">
+        <ion-icon name="checkmark"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

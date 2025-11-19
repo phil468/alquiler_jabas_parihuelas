@@ -150,6 +150,30 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'usuarios',
+    loadComponent: () =>
+      import('./pages/usuarios/usuarios-lista.page').then(
+        (m) => m.UsuariosListaPage
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'usuarios/nuevo',
+    loadComponent: () =>
+      import('./pages/usuarios/usuario-form.page').then(
+        (m) => m.UsuarioFormPage
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'usuarios/editar/:id',
+    loadComponent: () =>
+      import('./pages/usuarios/usuario-form.page').then(
+        (m) => m.UsuarioFormPage
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
     path: '**',
     redirectTo: '/login',
     pathMatch: 'full',

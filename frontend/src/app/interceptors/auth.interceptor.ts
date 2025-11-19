@@ -34,7 +34,17 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           // Token expirado o inválido
-          this.authService.logout(); // Ya no necesita subscribe, es async
+          this.authService.logout();
+        } else if (error.status === 403 && error.error?.logout) {
+          // Usuario desactivado o eliminado
+          this.authService.logout();
+          this.router.navigate(['/login'], {
+            queryParams: {
+              error:
+                'Tu cuenta ha sido desactivada. Contacta al administrador.',
+            },
+            replaceUrl: true,
+          });
         }
         return throwError(() => error);
       })

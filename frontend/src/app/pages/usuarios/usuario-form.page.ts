@@ -1,0 +1,165 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiService, Usuario } from '../../services/api.service';
+import { AlertController, LoadingController } from '@ionic/angular';
+
+@Component({
+  selector: 'app-usuario-form',
+  templateUrl: './usuario-form.page.html',
+  styleUrls: ['./usuario-form.page.scss'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, IonicModule],
+})
+export class UsuarioFormPage implements OnInit {
+  usuarioForm!: FormGroup;
+  isEditMode = false;
+  usuarioId?: number;
+  loading = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private alertController: AlertController,
+    private loadingController: LoadingController
+  ) {}
+
+  ngOnInit() {
+    this.initForm();
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.isEditMode = true;
+      this.usuarioId = parseInt(id);
+      this.cargarUsuario();
+    }
+  }
+
+  initForm() {
+    this.usuarioForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: [
+        '',
+        this.isEditMode ? [] : [Validators.required, Validators.minLength(6)],
+      ],
+      activo: [true],
+    });
+  }
+
+  async cargarUsuario() {
+    if (!this.usuarioId) return;
+
+    const loading = await this.loadingController.create({
+      message: 'Cargando usuario...',
+    });
+    await loading.present();
+
+    try {
+      const response = await this.apiService
+        .getUsuario(this.usuarioId)
+        .toPromise();
+      const usuario = response?.data;
+
+      if (usuario) {
+        this.usuarioForm.patchValue({
+          name: usuario.name,
+          email: usuario.email,
+          activo: usuario.activo,
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar usuario:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudo cargar el usuario',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      this.volver();
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async guardar() {
+    if (this.usuarioForm.invalid) {
+      Object.keys(this.usuarioForm.controls).forEach((key) => {
+        this.usuarioForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    const loading = await this.loadingController.create({
+      message: this.isEditMode
+        ? 'Actualizando usuario...'
+        : 'Creando usuario...',
+    });
+    await loading.present();
+
+    try {
+      const formData = this.usuarioForm.value;
+
+      // Si estamos editando y no se cambió el password, no enviarlo
+      if (this.isEditMode && !formData.password) {
+        delete formData.password;
+      }
+
+      if (this.isEditMode && this.usuarioId) {
+        await this.apiService
+          .updateUsuario(this.usuarioId, formData)
+          .toPromise();
+      } else {
+        await this.apiService.createUsuario(formData).toPromise();
+      }
+
+      await loading.dismiss();
+
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: this.isEditMode
+          ? 'Usuario actualizado correctamente'
+          : 'Usuario creado correctamente',
+        buttons: ['OK'],
+      });
+      await alert.present();
+
+      this.volver();
+    } catch (error: any) {
+      await loading.dismiss();
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: error.error?.message || 'Error al guardar el usuario',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
+  }
+
+  volver() {
+    this.router.navigate(['/usuarios']);
+  }
+
+  getErrorMessage(field: string): string {
+    const control = this.usuarioForm.get(field);
+    if (control?.hasError('required')) {
+      return 'Este campo es requerido';
+    }
+    if (control?.hasError('email')) {
+      return 'Email inválido';
+    }
+    if (control?.hasError('minlength')) {
+      return 'Mínimo 6 caracteres';
+    }
+    return '';
+  }
+}

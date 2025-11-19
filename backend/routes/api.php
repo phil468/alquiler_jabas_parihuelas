@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DescripcionJabaController;
 use App\Http\Controllers\Api\RegistroController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,14 +36,14 @@ Route::prefix('v1/auth')->group(function () {
 });
 
 // Rutas protegidas de autenticación
-Route::middleware('auth:sanctum')->prefix('v1/auth')->group(function () {
+Route::middleware(['auth:sanctum', 'user.active'])->prefix('v1/auth')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
 });
 
-// Rutas públicas (sin autenticación por ahora - se agregará Microsoft OAuth después)
-Route::prefix('v1')->group(function () {
+// Rutas protegidas con autenticación (aplicar a todas las rutas de la API)
+Route::middleware(['user.active'])->prefix('v1')->group(function () {
     
     // Tablas de mantenimiento
     Route::apiResource('clientes', ClienteController::class);
@@ -51,6 +52,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('choferes', ChoferController::class);
     Route::apiResource('placas', PlacaController::class);
     Route::apiResource('descripciones-jabas', DescripcionJabaController::class);
+    Route::apiResource('usuarios', UserController::class);
     
     // Registros principales
     Route::apiResource('registros', RegistroController::class);
@@ -66,13 +68,9 @@ Route::prefix('v1')->group(function () {
     Route::get('opciones/choferes', [ChoferController::class, 'activos']);
     Route::get('opciones/placas', [PlacaController::class, 'activas']);
     Route::get('opciones/descripciones-jabas', [DescripcionJabaController::class, 'activas']);
+    Route::get('opciones/usuarios', [UserController::class, 'activos']);
 
     // Dashboard y estadísticas
     Route::get('dashboard/estadisticas', [DashboardController::class, 'getEstadisticas']);
     Route::get('dashboard/tendencias', [DashboardController::class, 'getTendencias']);
-});
-
-// Rutas protegidas (requieren autenticación)
-Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    // Se agregarán rutas protegidas aquí cuando se implemente Microsoft OAuth
 });

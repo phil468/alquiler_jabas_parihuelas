@@ -67,6 +67,11 @@ export interface Usuario {
   id: number;
   name: string;
   email: string;
+  activo: boolean;
+  microsoft_id?: string;
+  avatar?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Registro {
@@ -469,5 +474,41 @@ export class ApiService {
       `${this.apiUrl}/dashboard/tendencias`,
       { params }
     );
+  }
+
+  // Usuarios
+  getUsuarios(): Observable<ApiResponse<Usuario[]>> {
+    return this.http.get<ApiResponse<Usuario[]>>(`${this.apiUrl}/usuarios`);
+  }
+
+  getUsuariosActivos(): Observable<ApiResponse<Usuario[]>> {
+    return this.http.get<ApiResponse<Usuario[]>>(
+      `${this.apiUrl}/opciones/usuarios`
+    );
+  }
+
+  getUsuario(id: number): Observable<ApiResponse<Usuario>> {
+    return this.http.get<ApiResponse<Usuario>>(`${this.apiUrl}/usuarios/${id}`);
+  }
+
+  createUsuario(data: Partial<Usuario>): Observable<ApiResponse<Usuario>> {
+    return this.http.post<ApiResponse<Usuario>>(
+      `${this.apiUrl}/usuarios`,
+      data
+    );
+  }
+
+  updateUsuario(
+    id: number,
+    data: Partial<Usuario>
+  ): Observable<ApiResponse<Usuario>> {
+    return this.http.put<ApiResponse<Usuario>>(
+      `${this.apiUrl}/usuarios/${id}`,
+      data
+    );
+  }
+
+  deleteUsuario(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/usuarios/${id}`);
   }
 }

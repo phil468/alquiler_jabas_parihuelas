@@ -70,7 +70,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // lo zona es lima Peru
+
+    'timezone' => 'America/Lima',
 
     /*
     |--------------------------------------------------------------------------

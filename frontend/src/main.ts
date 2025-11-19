@@ -87,6 +87,7 @@ import {
   arrowDownCircle,
   trendingUpOutline,
   trendingDownOutline,
+  personCircle
 } from 'ionicons/icons';
 
 addIcons({
@@ -158,6 +159,7 @@ addIcons({
   arrowDownCircle,
   trendingUpOutline,
   trendingDownOutline,
+  personCircle
 });
 
 bootstrapApplication(AppComponent, {

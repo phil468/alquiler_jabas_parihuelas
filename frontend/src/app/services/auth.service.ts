@@ -155,6 +155,11 @@ export class AuthService {
     this.currentUserSubject.next(user);
   }
 
+  // Método público para que otros componentes puedan guardar auth (ej: auth-callback)
+  public saveAuth(user: User, token: string): void {
+    this.setAuth(user, token);
+  }
+
   private setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
   }

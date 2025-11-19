@@ -44,27 +44,45 @@ class AuthController extends Controller
                 ->stateless()
                 ->user();
 
-            // Obtener avatar de forma segura (sin hacer llamada HTTP adicional)
+            // Verificar si el usuario existe en la base de datos
+            $user = User::where('email', $microsoftUser->getEmail())->first();
+
+            if (!$user) {
+                // Usuario no registrado en el sistema
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                $errorMessage = urlencode('Usuario no registrado en el sistema. Contacte al administrador.');
+                return redirect()->to(
+                    "{$frontendUrl}/login?error={$errorMessage}"
+                );
+            }
+
+            // Verificar si el usuario está activo
+            if (!$user->activo) {
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                $errorMessage = urlencode('Usuario inactivo. Contacte al administrador.');
+                return redirect()->to(
+                    "{$frontendUrl}/login?error={$errorMessage}"
+                );
+            }
+
+            // Obtener avatar de forma segura
             $avatarUrl = null;
             try {
-                // Intentar obtener avatar si está disponible en la respuesta
                 $avatarUrl = $microsoftUser->avatar ?? null;
             } catch (\Exception $e) {
-                // Si falla, usar null - no es crítico
                 $avatarUrl = null;
             }
 
-            // Buscar o crear usuario
-            $user = User::updateOrCreate(
-                ['email' => $microsoftUser->getEmail()],
-                [
-                    'name' => $microsoftUser->getName(),
-                    'email' => $microsoftUser->getEmail(),
-                    'microsoft_id' => $microsoftUser->getId(),
-                    'avatar' => $avatarUrl,
-                    'password' => Hash::make(uniqid()), // Password aleatorio
-                ]
-            );
+            // Actualizar microsoft_id y avatar si es necesario
+            if (!$user->microsoft_id) {
+                $user->microsoft_id = $microsoftUser->getId();
+            }
+            
+            if (!$user->avatar && $avatarUrl) {
+                $user->avatar = $avatarUrl;
+            }
+            
+            $user->save();
 
             // Crear token de Sanctum
             $token = $user->createToken('auth-token')->plainTextToken;
@@ -101,6 +119,24 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
+
+        // Verificar si el usuario existe
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no registrado en el sistema',
+            ], 401);
+        }
+
+        // Verificar si el usuario está activo
+        if (!$user->activo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario inactivo. Contacte al administrador.',
+            ], 403);
+        }
 
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([

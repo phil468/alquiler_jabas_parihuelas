@@ -35,9 +35,8 @@ export class AuthCallbackPage implements OnInit {
           // Decodificar datos del usuario
           const user = JSON.parse(atob(userEncoded));
 
-          // Guardar en localStorage
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(user));
+          // Guardar usando el servicio de autenticación (actualiza el BehaviorSubject)
+          this.authService.saveAuth(user, token);
 
           await loading.dismiss();
 

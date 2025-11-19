@@ -1,9 +1,9 @@
 <ion-content class="ion-padding">
   <div class="login-container">
     <div class="login-header">
-      <ion-icon name="cube" size="large" color="primary"></ion-icon>
-      <h1>Control de Alquiler</h1>
-      <p>Jabas y Parihuelas</p>
+      <img src="assets/images/Logotipo Vertical - Grupo Vanguard Internacional.png" alt="Grupo Vanguard Internacional" style="max-width: 300px; margin-bottom: 20px;">
+      <h1>Control de Alquiler <br> de Jabas y Parihuelas</h1>
+      <!-- <p>Jabas y Parihuelas</p> -->
     </div>
 
     <!-- Login Form -->
@@ -12,7 +12,22 @@
         <ion-card-title>Iniciar Sesión</ion-card-title>
       </ion-card-header>
 
-      <ion-card-content>
+      <ion-card-content>                
+
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="loginWithMicrosoft()"
+          class="microsoft-button"
+        >
+          <ion-icon name="logo-microsoft" slot="start"></ion-icon>
+          Continuar con Microsoft
+        </ion-button>
+
+        <div class="divider">
+          <span>O</span>
+        </div>
+
         <form [formGroup]="loginForm" (ngSubmit)="login()">
           <ion-item>
             <ion-label position="stacked">Email</ion-label>
@@ -43,26 +58,12 @@
           </ion-button>
         </form>
 
-        <div class="divider">
-          <span>O</span>
-        </div>
-
-        <ion-button 
-          expand="block" 
-          fill="outline" 
-          (click)="loginWithMicrosoft()"
-          class="microsoft-button"
-        >
-          <ion-icon name="logo-microsoft" slot="start"></ion-icon>
-          Continuar con Microsoft
-        </ion-button>
-
-        <div class="register-link">
+        <!-- <div class="register-link">
           <p>
             ¿No tienes cuenta? 
             <a (click)="toggleForm()">Regístrate aquí</a>
           </p>
-        </div>
+        </div> -->
       </ion-card-content>
     </ion-card>
 
