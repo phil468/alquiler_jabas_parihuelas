@@ -24,19 +24,19 @@ return new class extends Migration
         });
 
         // Migrar los representantes existentes de la tabla registros
-        DB::statement("
-            INSERT INTO representantes_clientes (cliente_id, nombre, activo, created_at, updated_at)
-            SELECT DISTINCT 
-                cliente_id, 
-                representante_cliente,
-                true,
-                NOW(),
-                NOW()
-            FROM registros 
-            WHERE representante_cliente IS NOT NULL 
-            AND representante_cliente != ''
-            AND cliente_id IS NOT NULL
-        ");
+        // DB::statement("
+        //     INSERT INTO representantes_clientes (cliente_id, nombre, activo, created_at, updated_at)
+        //     SELECT DISTINCT 
+        //         cliente_id, 
+        //         representante_cliente,
+        //         true,
+        //         NOW(),
+        //         NOW()
+        //     FROM registros 
+        //     WHERE representante_cliente IS NOT NULL 
+        //     AND representante_cliente != ''
+        //     AND cliente_id IS NOT NULL
+        // ");
     }
 
     /**
