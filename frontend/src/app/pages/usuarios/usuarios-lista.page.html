@@ -29,43 +29,43 @@
   </ion-refresher>
 
   <ion-list *ngIf="!loading && usuariosFiltrados.length > 0">
-    <ion-item-sliding *ngFor="let usuario of usuariosFiltrados">
-      <ion-item [button]="true" (click)="editarUsuario(usuario.id)">
-        <ion-avatar slot="start">
-          <img [src]="usuario.avatar || 'assets/avatar-default.svg'" [alt]="usuario.name" />
-        </ion-avatar>
+    <ion-item *ngFor="let usuario of usuariosFiltrados">
+      <ion-avatar slot="start" (click)="editarUsuario(usuario.id)">
+        <img [src]="usuario.avatar || 'assets/avatar-default.svg'" [alt]="usuario.name" />
+      </ion-avatar>
 
-        <ion-label>
-          <h2><strong>{{ usuario.name }}</strong></h2>
-          <p>{{ usuario.email }}</p>
-          <p *ngIf="usuario.microsoft_id">
-            <ion-icon name="logo-microsoft" color="primary"></ion-icon>
-            Conectado con Microsoft
-          </p>
-        </ion-label>
+      <ion-label (click)="editarUsuario(usuario.id)">
+        <h2><strong>{{ usuario.name }}</strong></h2>
+        <p>{{ usuario.email }}</p>
+        <p *ngIf="usuario.microsoft_id">
+          <ion-icon name="logo-microsoft" color="primary"></ion-icon>
+          Conectado con Microsoft
+        </p>
+      </ion-label>
 
-        <ion-badge [color]="usuario.activo ? 'success' : 'danger'" slot="end">
-          {{ usuario.activo ? 'Activo' : 'Inactivo' }}
-        </ion-badge>
-      </ion-item>
+      <ion-badge [color]="usuario.activo ? 'success' : 'danger'" slot="end">
+        {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+      </ion-badge>
 
-      <ion-item-options side="start">
-        <ion-item-option 
-          [color]="usuario.activo ? 'warning' : 'success'" 
-          (click)="toggleEstado(usuario)">
-          <ion-icon 
-            slot="icon-only" 
-            [name]="usuario.activo ? 'ban-outline' : 'checkmark-outline'"
-          ></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
+      <ion-button 
+        slot="end" 
+        fill="clear" 
+        [color]="usuario.activo ? 'warning' : 'success'"
+        (click)="toggleEstado(usuario)">
+        <ion-icon 
+          slot="icon-only" 
+          [name]="usuario.activo ? 'ban-outline' : 'checkmark-outline'"
+        ></ion-icon>
+      </ion-button>
 
-      <ion-item-options side="end">
-        <ion-item-option color="danger" (click)="eliminarUsuario(usuario)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+      <ion-button 
+        slot="end" 
+        fill="clear" 
+        color="danger" 
+        (click)="eliminarUsuario(usuario)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
   </ion-list>
 
   <div *ngIf="!loading && usuariosFiltrados.length === 0" class="empty-state">

@@ -41,6 +41,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/jabas_y_parihuelas/",
               "budgets": [
                 {
                   "type": "initial",

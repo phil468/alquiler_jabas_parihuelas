@@ -9,7 +9,7 @@ import {
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Usuario } from '../../services/api.service';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-usuario-form',
@@ -29,13 +29,12 @@ export class UsuarioFormPage implements OnInit {
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
-    private alertController: AlertController,
-    private loadingController: LoadingController
-  ) {}
+    private alertController: AlertController
+  ) {
+    this.initForm();
+  }
 
   ngOnInit() {
-    this.initForm();
-
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
@@ -59,11 +58,7 @@ export class UsuarioFormPage implements OnInit {
   async cargarUsuario() {
     if (!this.usuarioId) return;
 
-    const loading = await this.loadingController.create({
-      message: 'Cargando usuario...',
-    });
-    await loading.present();
-
+    this.loading = true;
     try {
       const response = await this.apiService
         .getUsuario(this.usuarioId)
@@ -87,7 +82,7 @@ export class UsuarioFormPage implements OnInit {
       await alert.present();
       this.volver();
     } finally {
-      await loading.dismiss();
+      this.loading = false;
     }
   }
 
@@ -99,13 +94,7 @@ export class UsuarioFormPage implements OnInit {
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: this.isEditMode
-        ? 'Actualizando usuario...'
-        : 'Creando usuario...',
-    });
-    await loading.present();
-
+    this.loading = true;
     try {
       const formData = this.usuarioForm.value;
 
@@ -122,8 +111,6 @@ export class UsuarioFormPage implements OnInit {
         await this.apiService.createUsuario(formData).toPromise();
       }
 
-      await loading.dismiss();
-
       const alert = await this.alertController.create({
         header: 'Éxito',
         message: this.isEditMode
@@ -135,13 +122,14 @@ export class UsuarioFormPage implements OnInit {
 
       this.volver();
     } catch (error: any) {
-      await loading.dismiss();
       const alert = await this.alertController.create({
         header: 'Error',
         message: error.error?.message || 'Error al guardar el usuario',
         buttons: ['OK'],
       });
       await alert.present();
+    } finally {
+      this.loading = false;
     }
   }
 
