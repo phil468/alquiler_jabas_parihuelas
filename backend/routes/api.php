@@ -63,6 +63,10 @@ Route::middleware(['user.active'])->prefix('v1')->group(function () {
     Route::get('registros/{id}/generar-pdf', [RegistroController::class, 'generarPdf']);
     Route::get('registros/exportar/excel', [RegistroController::class, 'exportarExcel']);
     
+    // Rutas de importación masiva
+    Route::post('choferes/import', [ChoferController::class, 'import']);
+    Route::post('descripciones-jabas/import', [DescripcionJabaController::class, 'import']);
+    
     // Ruta para obtener opciones activas (para dropdowns)
     Route::get('opciones/clientes', [ClienteController::class, 'activos']);
     Route::get('opciones/choferes', [ChoferController::class, 'activos']);

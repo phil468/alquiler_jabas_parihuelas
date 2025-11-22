@@ -3,6 +3,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface ImportResult {
+  success: boolean;
+  message: string;
+  imported?: number;
+  updated?: number;
+  errors?: string[];
+}
+
 export interface Cliente {
   id: number;
   codigo?: string;
@@ -55,12 +63,14 @@ export interface Placa {
 
 export interface DescripcionJaba {
   id: number;
+  cliente_id?: number;
   codigo: string;
   descripcion: string;
   color?: string;
   material?: string;
   capacidad?: number;
   activo: boolean;
+  cliente?: Cliente;
 }
 
 export interface Usuario {
@@ -300,8 +310,8 @@ export class ApiService {
   }
 
   // ========== DESCRIPCIONES JABAS ==========
-  getDescripcionesJabas(): Observable<DescripcionJaba[]> {
-    return this.http.get<DescripcionJaba[]>(
+  getDescripcionesJabas(): Observable<ApiResponse<DescripcionJaba[]>> {
+    return this.http.get<ApiResponse<DescripcionJaba[]>>(
       `${this.apiUrl}/descripciones-jabas`
     );
   }
@@ -309,6 +319,14 @@ export class ApiService {
   getDescripcionesJabasActivas(): Observable<ApiResponse<DescripcionJaba[]>> {
     return this.http.get<ApiResponse<DescripcionJaba[]>>(
       `${this.apiUrl}/opciones/descripciones-jabas`
+    );
+  }
+
+  getDescripcionesJabasActivasPorCliente(
+    clienteId: number
+  ): Observable<ApiResponse<DescripcionJaba[]>> {
+    return this.http.get<ApiResponse<DescripcionJaba[]>>(
+      `${this.apiUrl}/opciones/descripciones-jabas?cliente_id=${clienteId}`
     );
   }
 
@@ -510,5 +528,24 @@ export class ApiService {
 
   deleteUsuario(id: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/usuarios/${id}`);
+  }
+
+  // Importación masiva
+  importarChoferes(file: File): Observable<ImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ImportResult>(
+      `${this.apiUrl}/choferes/import`,
+      formData
+    );
+  }
+
+  importarDescripciones(file: File): Observable<ImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ImportResult>(
+      `${this.apiUrl}/descripciones-jabas/import`,
+      formData
+    );
   }
 }

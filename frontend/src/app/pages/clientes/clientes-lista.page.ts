@@ -26,6 +26,10 @@ export class ClientesListaPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    // this.cargarClientes();
+  }
+
+  ionViewWillEnter() {
     this.cargarClientes();
   }
 

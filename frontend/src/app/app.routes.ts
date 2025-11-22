@@ -174,6 +174,22 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'importar-choferes',
+    loadComponent: () =>
+      import('./pages/importar-choferes/importar-choferes.page').then(
+        (m) => m.ImportarChoferesPage
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'importar-descripciones',
+    loadComponent: () =>
+      import('./pages/importar-descripciones/importar-descripciones.page').then(
+        (m) => m.ImportarDescripcionesPage
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
     path: '**',
     redirectTo: '/login',
     pathMatch: 'full',

@@ -26,7 +26,7 @@ export class DescripcionesListaPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cargarDescripciones();
+    // this.cargarDescripciones();
   }
 
   ionViewWillEnter() {
@@ -39,8 +39,8 @@ export class DescripcionesListaPage implements OnInit {
       const response = await this.apiService
         .getDescripcionesJabas()
         .toPromise();
-      if (response) {
-        this.descripciones = response;
+      if (response?.data) {
+        this.descripciones = response.data;
         this.aplicarFiltros();
       }
     } catch (error) {

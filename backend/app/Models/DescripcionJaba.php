@@ -13,6 +13,7 @@ class DescripcionJaba extends Model
     protected $table = 'descripciones_jabas';
 
     protected $fillable = [
+        'cliente_id',
         'codigo',
         'descripcion',
         'color',
@@ -25,6 +26,12 @@ class DescripcionJaba extends Model
         'activo' => 'boolean',
         'capacidad' => 'decimal:2',
     ];
+
+    // Relación con cliente
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class);
+    }
 
     // Relaciones con registros (descripción 1 y 2)
     public function registrosDescripcion1()
@@ -41,5 +48,11 @@ class DescripcionJaba extends Model
     public function scopeActivas($query)
     {
         return $query->where('activo', true);
+    }
+
+    // Scope para descripciones por cliente
+    public function scopePorCliente($query, $clienteId)
+    {
+        return $query->where('cliente_id', $clienteId);
     }
 }

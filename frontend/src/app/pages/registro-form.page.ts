@@ -141,6 +141,7 @@ export class RegistroFormPage implements OnInit {
           await Promise.all([
             this.cargarRepresentantesCliente(clienteId),
             this.cargarChoferesCliente(clienteId),
+            this.cargarDescripcionesCliente(clienteId),
           ]);
 
           // Buscar cliente seleccionado y preseleccionar representante activo
@@ -163,6 +164,7 @@ export class RegistroFormPage implements OnInit {
           this.representantesCliente = [];
           this.choferes = [];
           this.placas = [];
+          this.descripcionesJabas = [];
           this.registroForm.patchValue({
             representante_cliente_id: '',
             chofer_id: '',
@@ -200,11 +202,8 @@ export class RegistroFormPage implements OnInit {
 
       // No cargar todos los choferes y placas inicialmente
       // Se cargarán cuando se seleccione un cliente
-
-      const descripcionesRes = await this.apiService
-        .getDescripcionesJabasActivas()
-        .toPromise();
-      this.descripcionesJabas = descripcionesRes?.data || [];
+      // Tampoco cargar todas las descripciones
+      // this.descripcionesJabas = [];
     } catch (error) {
       console.error('Error loading data:', error);
       const toast = await this.toastCtrl.create({
@@ -264,6 +263,18 @@ export class RegistroFormPage implements OnInit {
     } catch (error) {
       console.error('Error al cargar placas:', error);
       this.placas = [];
+    }
+  }
+
+  async cargarDescripcionesCliente(clienteId: number) {
+    try {
+      const response = await this.apiService
+        .getDescripcionesJabasActivasPorCliente(clienteId)
+        .toPromise();
+      this.descripcionesJabas = response?.data || [];
+    } catch (error) {
+      console.error('Error al cargar descripciones:', error);
+      this.descripcionesJabas = [];
     }
   }
 

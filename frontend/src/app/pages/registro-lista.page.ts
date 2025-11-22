@@ -110,7 +110,7 @@ export class RegistroListaPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cargarClientes();
+    // this.cargarClientes();
   }
 
   ionViewWillEnter() {

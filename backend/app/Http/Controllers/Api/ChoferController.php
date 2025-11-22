@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Chofer;
+use App\Imports\ChoferesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ChoferController extends Controller
 {
@@ -209,6 +211,49 @@ class ChoferController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al eliminar chofer: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Import choferes from Excel file.
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // Max 10MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Archivo inválido',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $import = new ChoferesImport();
+            Excel::import($import, $request->file('file'));
+
+            $response = [
+                'success' => true,
+                'message' => 'Importación completada',
+                'imported' => $import->getImported(),
+                'updated' => $import->getUpdated(),
+            ];
+
+            if (count($import->getErrors()) > 0) {
+                $response['errors'] = $import->getErrors();
+                $response['message'] = 'Importación completada con errores';
+            }
+
+            return response()->json($response);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al importar archivo: ' . $e->getMessage(),
             ], 500);
         }
     }

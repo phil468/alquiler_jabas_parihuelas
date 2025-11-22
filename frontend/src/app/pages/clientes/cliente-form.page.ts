@@ -232,7 +232,32 @@ export class ClienteFormPage implements OnInit {
     }
   }
 
-  mostrarAgregarRepresentante() {
+  async mostrarAgregarRepresentante() {
+    // Si es un cliente nuevo, primero lo guardamos
+    if (!this.clienteId) {
+      const alert = await this.alertController.create({
+        header: 'Guardar Cliente',
+        message:
+          'Para agregar un representante primero debes guardar el cliente. ¿Deseas guardarlo ahora?',
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+          },
+          {
+            text: 'Guardar',
+            handler: async () => {
+              await this.guardarClienteYAbrirRepresentante();
+            },
+          },
+        ],
+      });
+
+      await alert.present();
+      return;
+    }
+
+    // Si ya tiene ID, mostramos el formulario directamente
     this.mostrarFormRepresentante = true;
     this.representanteEditandoId = null;
     this.clienteForm.patchValue({
@@ -243,6 +268,53 @@ export class ClienteFormPage implements OnInit {
       representante_cargo: '',
       representante_activo: true,
     });
+  }
+
+  async guardarClienteYAbrirRepresentante() {
+    if (this.clienteForm.invalid) {
+      Object.keys(this.clienteForm.controls).forEach((key) => {
+        this.clienteForm.get(key)?.markAsTouched();
+      });
+      this.mostrarError(
+        'Por favor completa los campos obligatorios del cliente'
+      );
+      return;
+    }
+
+    this.loading = true;
+    try {
+      const data = this.clienteForm.value;
+      const response = await this.apiService.createCliente(data).toPromise();
+
+      if (response?.data) {
+        // Actualizamos el ID del cliente
+        this.clienteId = response.data.id;
+        this.isEditMode = true;
+
+        // Mostramos el formulario de representante
+        this.mostrarFormRepresentante = true;
+        this.representanteEditandoId = null;
+        this.clienteForm.patchValue({
+          representante_nombre: '',
+          representante_dni: '',
+          representante_telefono: '',
+          representante_email: '',
+          representante_cargo: '',
+          representante_activo: true,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error al guardar cliente:', error);
+      let mensaje = 'Error al guardar el cliente';
+
+      if (error?.error?.message) {
+        mensaje = error.error.message;
+      }
+
+      this.mostrarError(mensaje);
+    } finally {
+      this.loading = false;
+    }
   }
 
   editarRepresentante(representante: RepresentanteCliente) {

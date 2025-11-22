@@ -62,7 +62,7 @@
 
         <ion-item>
           <ion-label>Estado</ion-label>
-          <ion-toggle formControlName="activo" slot="end"></ion-toggle>
+          <ion-checkbox formControlName="activo" slot="end"></ion-checkbox>
         </ion-item>
         <ion-note>
           {{ usuarioForm.get('activo')?.value ? 'Usuario activo' : 'Usuario inactivo' }}

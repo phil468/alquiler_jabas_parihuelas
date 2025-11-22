@@ -107,15 +107,15 @@
         <ion-card-title>Estado</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-item>
+        <ion-item lines="full">
           <ion-label>Cliente Activo</ion-label>
-          <ion-toggle formControlName="activo" slot="end"></ion-toggle>
+          <ion-checkbox formControlName="activo" slot="end" color="primary"></ion-checkbox>
         </ion-item>
       </ion-card-content>
     </ion-card>
 
     <!-- Representantes (solo en modo edición) -->
-    <ion-card *ngIf="isEditMode && clienteId">
+    <ion-card>
       <ion-card-header>
         <ion-card-title>Representantes</ion-card-title>
       </ion-card-header>
@@ -169,9 +169,9 @@
             <ion-input formControlName="representante_cargo" placeholder="Ej: Gerente General"></ion-input>
           </ion-item>
 
-          <ion-item>
+          <ion-item lines="full">
             <ion-label>Representante Activo</ion-label>
-            <ion-toggle formControlName="representante_activo" slot="end"></ion-toggle>
+            <ion-checkbox formControlName="representante_activo" slot="end" color="primary"></ion-checkbox>
           </ion-item>
 
           <div class="ion-padding-top">
