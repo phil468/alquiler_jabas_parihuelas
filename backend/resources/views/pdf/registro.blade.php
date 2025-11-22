@@ -276,7 +276,7 @@
                     <tr>
                         <td>Jaba 1</td>
                         <td>{{ $registro->descripcionJaba1->descripcion }}</td>
-                        <td>{{ $registro->cantidad_jaba_1 }}</td>
+                        <td>{{ $registro->cantidad_jabas_1 }}</td>
                         <td>{{ $registro->descripcionJaba1->material ?? 'N/A' }}</td>
                     </tr>
                 @endif
@@ -284,7 +284,7 @@
                     <tr>
                         <td>Jaba 2</td>
                         <td>{{ $registro->descripcionJaba2->descripcion }}</td>
-                        <td>{{ $registro->cantidad_jaba_2 }}</td>
+                        <td>{{ $registro->cantidad_jabas_2 }}</td>
                         <td>{{ $registro->descripcionJaba2->material ?? 'N/A' }}</td>
                     </tr>
                 @endif
