@@ -4,6 +4,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 export interface User {
   id: number;
@@ -34,6 +37,67 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {
     this.loadStoredUser();
+    this.setupDeepLinkListener();
+  }
+
+  private setupDeepLinkListener() {
+    if (Capacitor.isNativePlatform()) {
+      App.addListener('appUrlOpen', async (data: any) => {
+        const url = data.url;
+        console.log('[DeepLink] URL recibido:', url);
+
+        // Verificar si es callback de OAuth
+        if (url.includes('auth-callback')) {
+          try {
+            const urlObj = new URL(url);
+            const token = urlObj.searchParams.get('token');
+            const userEncoded = urlObj.searchParams.get('user');
+
+            console.log('[DeepLink] Params:', {
+              hasToken: !!token,
+              hasUser: !!userEncoded,
+            });
+
+            if (token && userEncoded) {
+              // Autenticación exitosa
+              try {
+                const userData = JSON.parse(atob(userEncoded));
+                console.log('[DeepLink] Usuario decodificado:', userData.email);
+                this.setAuth(userData, token);
+
+                // Pequeño delay para asegurar que se guarde
+                await new Promise((resolve) => setTimeout(resolve, 100));
+
+                await this.router.navigate(['/home'], { replaceUrl: true });
+                console.log('[DeepLink] Navegación a home completada');
+              } catch (error) {
+                console.error('[DeepLink] Error parseando usuario:', error);
+                await this.router.navigate(['/login'], {
+                  queryParams: { error: 'Error procesando autenticación' },
+                  replaceUrl: true,
+                });
+              }
+            }
+          } catch (error) {
+            console.error('[DeepLink] Error procesando URL:', error);
+          }
+        } else if (url.includes('login?error')) {
+          // Error en OAuth
+          try {
+            const urlObj = new URL(url);
+            const error = urlObj.searchParams.get('error');
+            await this.router.navigate(['/login'], {
+              queryParams: {
+                error: decodeURIComponent(error || 'Error de autenticación'),
+              },
+              replaceUrl: true,
+            });
+          } catch (e) {
+            console.error('[DeepLink] Error manejando error:', e);
+          }
+        }
+      });
+    }
   }
 
   private loadStoredUser() {
@@ -86,8 +150,26 @@ export class AuthService {
       );
   }
 
-  loginWithMicrosoft(): void {
-    window.location.href = `${this.apiUrl}/auth/microsoft`;
+  async loginWithMicrosoft(): Promise<void> {
+    const isMobile = Capacitor.isNativePlatform();
+
+    if (isMobile) {
+      // En móvil, abrir en browser externo (Chrome Custom Tabs)
+      // Esto permite que el deep link funcione automáticamente
+      const authUrl = `${this.apiUrl}/auth/microsoft`;
+
+      // Usar Browser plugin pero sin popover (abre en Chrome Custom Tabs)
+      await Browser.open({
+        url: authUrl,
+        // NO usar presentationStyle para que abra en Chrome Custom Tabs
+        windowName: '_blank',
+      });
+
+      // El callback será manejado por el deep link listener
+    } else {
+      // En web, redirect normal
+      window.location.href = `${this.apiUrl}/auth/microsoft`;
+    }
   }
 
   handleMicrosoftCallback(code: string): Observable<AuthResponse> {

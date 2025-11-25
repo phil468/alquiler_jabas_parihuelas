@@ -34,6 +34,31 @@ class AuthController extends Controller
     }
 
     /**
+     * Detecta si la petición viene desde la app móvil
+     */
+    private function isMobileApp(Request $request): bool
+    {
+        // Verificar header personalizado
+        if ($request->header('X-Mobile-App') === 'true') {
+            return true;
+        }
+
+        // Verificar User-Agent para Capacitor o navegadores móviles
+        $userAgent = $request->header('User-Agent', '');
+        if (
+            stripos($userAgent, 'capacitor') !== false ||
+            stripos($userAgent, 'jabasyparihuelas') !== false ||
+            stripos($userAgent, 'android') !== false ||
+            stripos($userAgent, 'iphone') !== false ||
+            stripos($userAgent, 'mobile') !== false
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Handle Microsoft OAuth callback
      */
     public function handleMicrosoftCallback(Request $request)
@@ -49,20 +74,30 @@ class AuthController extends Controller
 
             if (!$user) {
                 // Usuario no registrado en el sistema
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                $isMobile = $this->isMobileApp($request);
                 $errorMessage = urlencode('Usuario no registrado en el sistema. Contacte al administrador.');
-                return redirect()->to(
-                    "{$frontendUrl}/login?error={$errorMessage}"
-                );
+                
+                if ($isMobile) {
+                    $appScheme = 'jabasyparihuelas://';
+                    return redirect()->to("{$appScheme}login?error={$errorMessage}");
+                } else {
+                    $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                    return redirect()->to("{$frontendUrl}/login?error={$errorMessage}");
+                }
             }
 
             // Verificar si el usuario está activo
             if (!$user->activo) {
-                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                $isMobile = $this->isMobileApp($request);
                 $errorMessage = urlencode('Usuario inactivo. Contacte al administrador.');
-                return redirect()->to(
-                    "{$frontendUrl}/login?error={$errorMessage}"
-                );
+                
+                if ($isMobile) {
+                    $appScheme = 'jabasyparihuelas://';
+                    return redirect()->to("{$appScheme}login?error={$errorMessage}");
+                } else {
+                    $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                    return redirect()->to("{$frontendUrl}/login?error={$errorMessage}");
+                }
             }
 
             // Obtener avatar de forma segura
@@ -87,8 +122,7 @@ class AuthController extends Controller
             // Crear token de Sanctum
             $token = $user->createToken('auth-token')->plainTextToken;
 
-            // Redirigir al frontend con el token y datos del usuario
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+            // Preparar datos del usuario (usar base64 para compatibilidad)
             $userData = base64_encode(json_encode([
                 'id' => $user->id,
                 'name' => $user->name,
@@ -96,17 +130,40 @@ class AuthController extends Controller
                 'avatar' => $user->avatar,
             ]));
 
-            return redirect()->to(
-                "{$frontendUrl}/auth/callback?token={$token}&user={$userData}"
-            );
+            // Detectar si viene desde móvil
+            $isMobile = $this->isMobileApp($request);
+            
+            if ($isMobile) {
+                // Usar deep link custom scheme para la app móvil
+                // Con Chrome Custom Tabs, esto cerrará automáticamente el navegador
+                $appScheme = 'jabasyparihuelas://auth-callback';
+                return redirect()->to(
+                    "{$appScheme}?token={$token}&user={$userData}"
+                );
+            } else {
+                // Redirigir al frontend web
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                return redirect()->to(
+                    "{$frontendUrl}/auth/callback?token={$token}&user={$userData}"
+                );
+            }
 
         } catch (\Exception $e) {
-            // En caso de error, redirigir al login con mensaje de error
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+            // En caso de error, redirigir según el contexto
+            $isMobile = $this->isMobileApp($request);
             $errorMessage = urlencode($e->getMessage());
-            return redirect()->to(
-                "{$frontendUrl}/login?error={$errorMessage}"
-            );
+            
+            if ($isMobile) {
+                $appScheme = 'jabasyparihuelas://login';
+                return redirect()->to(
+                    "{$appScheme}?error={$errorMessage}"
+                );
+            } else {
+                $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
+                return redirect()->to(
+                    "{$frontendUrl}/login?error={$errorMessage}"
+                );
+            }
         }
     }
 

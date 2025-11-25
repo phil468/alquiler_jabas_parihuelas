@@ -62,6 +62,10 @@ export class AuthCallbackPage implements OnInit {
           const user = JSON.parse(atob(userEncoded));
           console.log('[AuthCallback] User decoded:', user);
 
+          // En Chrome Custom Tabs, simplemente procesar normalmente
+          // El deep link se encargará de volver a la app          const user = JSON.parse(atob(userEncoded));
+          console.log('[AuthCallback] User decoded:', user);
+
           // Intentar guardar en localStorage directamente
           console.log('[AuthCallback] Attempting to save to localStorage...');
 
