@@ -55,11 +55,11 @@
           <ion-item>
             <ion-label>
               <h3>Representante</h3>
-              <p *ngIf="registro.representanteCliente">
-                {{ registro.representanteCliente.nombre }}
-                <span *ngIf="registro.representanteCliente.cargo"> - {{ registro.representanteCliente.cargo }}</span>
+              <p *ngIf="registro.representante_cliente">
+                {{ registro.representante_cliente.nombre }}
+                <span *ngIf="registro.representante_cliente.cargo"> - {{ registro.representante_cliente.cargo }}</span>
               </p>
-              <p *ngIf="!registro.representanteCliente && registro.representante_cliente">
+              <p *ngIf="!registro.representante_cliente && registro.representante_cliente">
                 {{ registro.representante_cliente }}
               </p>
             </ion-label>

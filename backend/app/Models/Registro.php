@@ -16,7 +16,7 @@ class Registro extends Model
         'fecha',
         'hora',
         'cliente_id',
-        'representante_cliente',
+        // 'representante_cliente',
         'representante_cliente_id',
         'chofer_id',
         'placa_1_id',

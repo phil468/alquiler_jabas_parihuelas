@@ -114,9 +114,9 @@
             </ion-badge>
           </h2>
           <h3>{{ registro.cliente?.nombre }}</h3>
-          <p *ngIf="registro.representanteCliente || registro.representante_cliente">
+          <p *ngIf="registro.representante_cliente || registro.representante_cliente">
             <ion-icon name="person-outline"></ion-icon>
-            Rep: {{ registro.representanteCliente?.nombre || registro.representante_cliente }}
+            Rep: {{ registro.representante_cliente.nombre}}
           </p>
           <p>
             <ion-icon name="calendar-outline"></ion-icon>

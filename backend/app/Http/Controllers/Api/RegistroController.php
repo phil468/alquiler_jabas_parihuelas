@@ -20,7 +20,8 @@ class RegistroController extends Controller
     public function index(Request $request)
     {
         $query = Registro::with([
-            'cliente', 
+            'cliente',
+            'cliente.representanteActivo',
             'chofer', 
             'placa1', 
             'placa2', 

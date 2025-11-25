@@ -91,7 +91,7 @@ export interface Registro {
   hora?: string;
   cliente_id: number;
   representante_cliente_id?: number;
-  representante_cliente?: string;
+  // representante_cliente?: string;
   chofer_id: number;
   placa_1_id?: number;
   placa_2_id?: number;
@@ -119,7 +119,7 @@ export interface Registro {
   descripcionJaba1?: DescripcionJaba;
   descripcionJaba2?: DescripcionJaba;
   usuario?: Usuario;
-  representanteCliente?: RepresentanteCliente;
+  representante_cliente?: RepresentanteCliente;
 }
 
 export interface ApiResponse<T> {
