@@ -95,3 +95,17 @@ ion-note {
     }
   }
 }
+
+.download-apk-button {
+  --color: var(--ion-color-primary);
+  font-size: 14px;
+  text-transform: none;
+  
+  &:hover {
+    --color: var(--ion-color-primary-shade);
+  }
+  
+  ion-icon {
+    font-size: 20px;
+  }
+}
