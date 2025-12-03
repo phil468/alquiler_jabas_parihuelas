@@ -122,29 +122,43 @@
       </ion-card-header>
       <ion-card-content>
         <ion-list>
-          <ion-item *ngIf="registro.descripcionJaba1">
+          <ion-item *ngIf="registro.descripcion_jaba1">
             <ion-label>
-              <h3>{{ registro.descripcionJaba1.descripcion }}</h3>
-              <p>Cantidad: {{ registro.cantidad_jabas_1 }} jabas</p>
+              <h3>Jabas Tipo 1</h3>
+              <p><strong>{{ registro.descripcion_jaba1.descripcion }}</strong> - {{ registro.descripcion_jaba1.color }}</p>
+              <p>Cantidad: <strong>{{ registro.cantidad_jabas_1 }}</strong> jabas</p>
             </ion-label>
           </ion-item>
-          <ion-item *ngIf="registro.descripcionJaba2">
+          <ion-item *ngIf="registro.descripcion_jaba2">
             <ion-label>
-              <h3>{{ registro.descripcionJaba2.descripcion }}</h3>
-              <p>Cantidad: {{ registro.cantidad_jabas_2 }} jabas</p>
+              <h3>Jabas Tipo 2</h3>
+              <p><strong>{{ registro.descripcion_jaba2.descripcion }}</strong> - {{ registro.descripcion_jaba2.color }}</p>
+              <p>Cantidad: <strong>{{ registro.cantidad_jabas_2 }}</strong> jabas</p>
             </ion-label>
           </ion-item>
           <ion-item>
             <ion-label>
               <h3>Parihuelas</h3>
-              <p>Cantidad: {{ registro.cantidad_parihuelas }}</p>
+              <p>Cantidad: <strong>{{ registro.cantidad_parihuelas }}</strong></p>
             </ion-label>
           </ion-item>
-          <ion-item *ngIf="registro.guia_remision">
+          <ion-item *ngIf="registro.guia_remision || registro.serie_guia || registro.numero_guia">
             <ion-label>
               <h3>Guía de Remisión</h3>
-              <p>{{ registro.guia_remision }}</p>
+              <p *ngIf="registro.serie_guia && registro.numero_guia">
+                <strong>{{ registro.serie_guia }} - {{ registro.numero_guia }}</strong>
+              </p>
+              <p *ngIf="!registro.serie_guia && registro.guia_remision">
+                {{ registro.guia_remision }}
+              </p>
             </ion-label>
+            <!-- Botones de acción para la guía (solo si tiene PDF adjunto) -->
+            <ion-button *ngIf="registro.pdf_path" slot="end" fill="clear" color="primary" (click)="verGuiaPDF()">
+              <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="registro.pdf_path" slot="end" fill="clear" color="success" (click)="descargarGuiaPDF()">
+              <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+            </ion-button>
           </ion-item>
         </ion-list>
       </ion-card-content>
@@ -159,7 +173,7 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>{{ registro.observaciones }}</p>
+        <p style="white-space: pre-wrap;">{{ registro.observaciones }}</p>
       </ion-card-content>
     </ion-card>
 
@@ -229,15 +243,15 @@
     <ion-card>
       <ion-card-content>
         <ion-grid>
-          <!-- Botones de Estado (solo si está pendiente) -->
+          <!-- Botones de Estado (solo si está pendiente y tiene permisos) -->
           <ion-row *ngIf="registro.estado === 'por_aprobar'">
-            <ion-col size="12" size-md="6">
+            <ion-col size="12" size-md="6" *ngIf="permisosService.puedeAprobarRegistro()">
               <ion-button expand="block" color="success" (click)="aprobar()">
                 <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
                 Aprobar Registro
               </ion-button>
             </ion-col>
-            <ion-col size="12" size-md="6">
+            <ion-col size="12" size-md="6" *ngIf="permisosService.puedeRechazarRegistro()">
               <ion-button expand="block" color="danger" (click)="rechazar()">
                 <ion-icon slot="start" name="close-circle-outline"></ion-icon>
                 Rechazar Registro
@@ -247,14 +261,20 @@
 
           <!-- Botones Generales -->
           <ion-row>
-            <ion-col size="12" size-md="6">
+            <ion-col size="12" size-md="4" *ngIf="permisosService.puedeGenerarPdf()">
+              <ion-button expand="block" color="tertiary" fill="outline" (click)="previsualizarPDF()">
+                <ion-icon slot="start" name="eye-outline"></ion-icon>
+                Vista Previa PDF
+              </ion-button>
+            </ion-col>
+            <ion-col size="12" size-md="4" *ngIf="permisosService.puedeGenerarPdf()">
               <ion-button expand="block" color="primary" (click)="descargarPDF()">
                 <ion-icon slot="start" name="download-outline"></ion-icon>
                 Descargar PDF
               </ion-button>
             </ion-col>
-            <ion-col size="12" size-md="6">
-              <ion-button expand="block" color="medium" fill="outline" (click)="adjuntarPDF()">
+            <ion-col size="12" size-md="4" *ngIf="registro.estado === 'aprobado' && permisosService.puedeAdjuntarGuia()">
+              <ion-button expand="block" color="success" fill="outline" (click)="adjuntarPDF()">
                 <ion-icon slot="start" name="document-attach-outline"></ion-icon>
                 Adjuntar Guía (PDF)
               </ion-button>
@@ -298,6 +318,24 @@
             <ion-label>
               <h3>Fecha de creación</h3>
               <p>{{ registro.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.aprobadoPor && registro.estado === 'aprobado'">
+            <ion-label>
+              <h3>Aprobado por</h3>
+              <p>{{ registro.aprobadoPor.name }}</p>
+              <p *ngIf="registro.aprobado_en" class="ion-text-wrap">
+                <small>{{ registro.aprobado_en | date:'dd/MM/yyyy HH:mm' }}</small>
+              </p>
+            </ion-label>
+          </ion-item>
+          <ion-item *ngIf="registro.rechazadoPor && registro.estado === 'rechazado'">
+            <ion-label>
+              <h3>Rechazado por</h3>
+              <p>{{ registro.rechazadoPor.name }}</p>
+              <p *ngIf="registro.rechazado_en" class="ion-text-wrap">
+                <small>{{ registro.rechazado_en | date:'dd/MM/yyyy HH:mm' }}</small>
+              </p>
             </ion-label>
           </ion-item>
           <ion-item *ngIf="registro.updated_at !== registro.created_at">

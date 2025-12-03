@@ -19,6 +19,7 @@ import {
   AlertController,
 } from '@ionic/angular/standalone';
 import { AuthService } from './services/auth.service';
+import { PermisosService } from './services/permisos.service';
 
 @Component({
   selector: 'app-root',
@@ -47,62 +48,88 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   user: any = null;
 
-  menuItems = [
+  private allMenuItems = [
     {
       title: 'Inicio',
       url: '/home',
       icon: 'home',
+      permission: null, // Todos pueden acceder
     },
     {
       title: 'Nuevo Registro',
       url: '/registro-form',
       icon: 'add-circle',
+      permission: 'crear_registro',
     },
     {
       title: 'Lista de Registros',
       url: '/registro-lista',
       icon: 'list',
+      permission: 'ver_registros',
     },
     {
       title: 'Dashboard',
       url: '/dashboard',
       icon: 'stats-chart',
+      permission: null, // Todos pueden ver el dashboard
     },
     {
       title: 'Configuración',
       url: '/configuracion',
       icon: 'settings',
+      permission: 'configuracion',
       divider: true,
     },
     {
       title: 'Clientes',
       url: '/clientes',
       icon: 'people',
+      permission: 'configuracion',
     },
     {
       title: 'Choferes',
       url: '/choferes',
       icon: 'person',
+      permission: 'configuracion',
     },
     {
       title: 'Placas',
       url: '/placas',
       icon: 'car',
+      permission: 'configuracion',
     },
     {
       title: 'Jabas',
       url: '/descripciones',
       icon: 'cube',
+      permission: 'configuracion',
     },
     {
       title: 'Usuarios',
       url: '/usuarios',
       icon: 'person-circle',
+      permission: 'configuracion', // Solo admin puede gestionar usuarios
     },
   ];
 
+  get menuItems() {
+    return this.allMenuItems.filter((item) => {
+      // Si no requiere permiso, mostrar siempre
+      if (!item.permission) {
+        return true;
+      }
+      // Si es administrador, mostrar todo
+      if (this.permisosService.esAdministrador()) {
+        return true;
+      }
+      // Verificar permiso específico
+      return this.permisosService.tienePermiso(item.permission);
+    });
+  }
+
   constructor(
     private authService: AuthService,
+    private permisosService: PermisosService,
     private router: Router,
     private alertController: AlertController
   ) {

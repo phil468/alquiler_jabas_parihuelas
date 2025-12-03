@@ -123,11 +123,11 @@ export class RegistroFormPage implements OnInit {
       cliente_id: ['', Validators.required],
       representante_cliente_id: ['', Validators.required],
       chofer_id: ['', Validators.required],
-      placa_1_id: [''],
+      placa_1_id: ['', Validators.required],
       placa_2_id: [''],
-      descripcion_jaba_1_id: [''],
+      descripcion_jaba_1_id: ['', Validators.required],
       descripcion_jaba_2_id: [''],
-      cantidad_jabas_1: [0, [Validators.required, Validators.min(0)]],
+      cantidad_jabas_1: [0, [Validators.required, Validators.min(1)]],
       cantidad_jabas_2: [0, Validators.min(0)],
       cantidad_parihuelas: [0, [Validators.required, Validators.min(0)]],
       observaciones: [''],
@@ -293,12 +293,24 @@ export class RegistroFormPage implements OnInit {
     }
   }
 
-  async confirmarGuardar() {
+  async onSubmit() {
     if (this.registroForm.invalid) {
       const toast = await this.toastCtrl.create({
-        message: 'Por favor complete todos los campos requeridos',
+        message: 'Por favor, complete todos los campos requeridos',
         duration: 3000,
         color: 'warning',
+      });
+      await toast.present();
+      return;
+    }
+
+    // Validar que las firmas sean obligatorias
+    if (!this.firmaEntregado || !this.firmaRepresentante) {
+      const toast = await this.toastCtrl.create({
+        message:
+          'Las firmas del Entregado y del Representante son obligatorias',
+        duration: 3000,
+        color: 'danger',
       });
       await toast.present();
       return;

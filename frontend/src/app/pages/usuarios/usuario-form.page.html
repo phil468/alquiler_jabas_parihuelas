@@ -47,6 +47,18 @@
         </ion-note>
 
         <ion-item>
+          <ion-label position="stacked">Rol *</ion-label>
+          <ion-select formControlName="role_id" placeholder="Selecciona un rol">
+            <ion-select-option *ngFor="let rol of roles" [value]="rol.id">
+              {{ rol.nombre }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-note color="danger" *ngIf="usuarioForm.get('role_id')?.touched && usuarioForm.get('role_id')?.invalid">
+          {{ getErrorMessage('role_id') }}
+        </ion-note>
+
+        <ion-item>
           <ion-label position="stacked">
             Contraseña {{ isEditMode ? '(dejar vacío para no cambiar)' : '*' }}
           </ion-label>

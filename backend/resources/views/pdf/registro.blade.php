@@ -71,6 +71,20 @@
             font-weight: bold;
             margin-bottom: 10px;
             border-radius: 3px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border-radius: 2px;
         }
 
         .two-columns {
@@ -126,7 +140,7 @@
             max-width: 100%;
             height: auto;
             max-height: 100px;
-            border: 1px solid #ddd;
+            /* border: 1px solid #ddd; */
         }
 
         .firma-label {
@@ -182,7 +196,7 @@
 
     <!-- Información General -->
     <div class="section">
-        <div class="section-title">📋 Información General</div>
+        <div class="section-title">Información General</div>
         <div class="info-row">
             <div class="info-label">Fecha:</div>
             <div class="info-value">{{ \Carbon\Carbon::parse($registro->fecha)->format('d/m/Y') }}</div>
@@ -205,34 +219,34 @@
 
     <!-- Cliente e Información de Transporte -->
     <div class="section">
-        <div class="section-title">👤 Cliente e Información de Transporte</div>
+        <div class="section-title">Cliente e Información de Transporte</div>
         <div class="two-columns">
             <div class="column">
                 <div class="info-row">
                     <div class="info-label">Cliente:</div>
-                    <div class="info-value">{{ $registro->cliente->nombre ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->cliente->nombre ?? '' }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">RUC:</div>
-                    <div class="info-value">{{ $registro->cliente->ruc ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->cliente->ruc ?? '' }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Representante:</div>
-                    <div class="info-value">{{ $registro->representante_cliente ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->representante_cliente ?? '' }}</div>
                 </div>
             </div>
             <div class="column">
                 <div class="info-row">
                     <div class="info-label">Chofer:</div>
-                    <div class="info-value">{{ $registro->chofer->nombre ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->chofer->nombre ?? '' }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">DNI Chofer:</div>
-                    <div class="info-value">{{ $registro->chofer->dni ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->chofer->dni ?? '' }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Licencia:</div>
-                    <div class="info-value">{{ $registro->chofer->licencia ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $registro->chofer->licencia ?? '' }}</div>
                 </div>
             </div>
         </div>
@@ -240,20 +254,20 @@
 
     <!-- Placas -->
     <div class="section">
-        <div class="section-title">🚛 Placas de Vehículos</div>
+        <div class="section-title">Placas de Vehículos</div>
         <div class="two-columns">
             <div class="column">
                 <div class="info-row">
                     <div class="info-label">Placa N° 1:</div>
-                    <div class="info-value">{{ $registro->placa1->numero_placa ?? 'N/A' }}
-                        ({{ $registro->placa1->tipo_vehiculo ?? 'N/A' }})</div>
+                    <div class="info-value">{{ $registro->placa1->numero_placa ?? '' }}
+                        ({{ $registro->placa1->tipo_vehiculo ?? '' }})</div>
                 </div>
             </div>
             <div class="column">
                 <div class="info-row">
                     <div class="info-label">Placa N° 2:</div>
-                    <div class="info-value">{{ $registro->placa2->numero_placa ?? 'N/A' }}
-                        ({{ $registro->placa2->tipo_vehiculo ?? 'N/A' }})</div>
+                    <div class="info-value">{{ $registro->placa2->numero_placa ?? '' }}
+                        ({{ $registro->placa2->tipo_vehiculo ?? '' }})</div>
                 </div>
             </div>
         </div>
@@ -261,14 +275,14 @@
 
     <!-- Detalles de Carga -->
     <div class="section">
-        <div class="section-title">📦 Detalles de Carga</div>
+        <div class="section-title">Detalles de Carga</div>
         <table class="tabla-detalles">
             <thead>
                 <tr>
                     <th>Tipo</th>
                     <th>Descripción</th>
                     <th>Cantidad</th>
-                    <th>Material</th>
+                    {{-- <th>Material</th> --}}
                 </tr>
             </thead>
             <tbody>
@@ -277,7 +291,7 @@
                         <td>Jaba 1</td>
                         <td>{{ $registro->descripcionJaba1->descripcion }}</td>
                         <td>{{ $registro->cantidad_jabas_1 }}</td>
-                        <td>{{ $registro->descripcionJaba1->material ?? 'N/A' }}</td>
+                        {{-- <td>{{ $registro->descripcionJaba1->material ?? '' }}</td> --}}
                     </tr>
                 @endif
                 @if ($registro->descripcionJaba2)
@@ -285,11 +299,11 @@
                         <td>Jaba 2</td>
                         <td>{{ $registro->descripcionJaba2->descripcion }}</td>
                         <td>{{ $registro->cantidad_jabas_2 }}</td>
-                        <td>{{ $registro->descripcionJaba2->material ?? 'N/A' }}</td>
+                        {{-- <td>{{ $registro->descripcionJaba2->material ?? '' }}</td> --}}
                     </tr>
                 @endif
                 <tr>
-                    <td colspan="2" style="font-weight: bold; text-align: right;">Total Parihuelas:</td>
+                    <td colspan="1" style="font-weight: bold; text-align: left;">Total Parihuelas:</td>
                     <td colspan="2">{{ $registro->cantidad_parihuelas ?? 0 }}</td>
                 </tr>
             </tbody>
@@ -299,7 +313,7 @@
     <!-- Observaciones -->
     @if ($registro->observaciones)
         <div class="section">
-            <div class="section-title">📝 Observaciones</div>
+            <div class="section-title">Observaciones</div>
             <div style="padding: 10px; background-color: #f8f9fa; border-left: 4px solid #3498db;">
                 {{ $registro->observaciones }}
             </div>
@@ -309,7 +323,7 @@
     <!-- Motivo de Rechazo -->
     @if ($registro->estado === 'rechazado' && $registro->motivo_rechazo)
         <div class="section">
-            <div class="section-title" style="background-color: #e74c3c;">⚠️ Motivo de Rechazo</div>
+            <div class="section-title" style="background-color: #e74c3c;">Motivo de Rechazo</div>
             <div style="padding: 10px; background-color: #fadbd8; border-left: 4px solid #e74c3c; color: #c0392b;">
                 {{ $registro->motivo_rechazo }}
             </div>
@@ -318,33 +332,33 @@
 
     <!-- Firmas -->
     <div class="section">
-        <div class="section-title">✍️ Firmas Digitales</div>
+        <div class="section-title">Firmas Digitales</div>
         <div class="two-columns">
             <div class="column">
                 <div class="firma-container">
                     @if ($registro->firma_entregado)
-                        <img src="data:image/png;base64,{{ $registro->firma_entregado }}" class="firma-img"
-                            alt="Firma Entregado">
+                        <img src="{{ $registro->firma_entregado }}" class="firma-img" alt="Firma Entregado">
                     @else
                         <p style="color: #95a5a6; font-style: italic;">Sin firma</p>
                     @endif
-                    <div class="firma-label">Firma del Entregado</div>
-                    @if ($registro->nombre_entregado)
-                        <div style="margin-top: 5px; font-weight: bold;">{{ $registro->nombre_entregado }}</div>
+                    <div class="firma-label">Firma del Registrador</div>
+                    @if ($registro->usuario)
+                        <div style="margin-top: 5px; font-weight: bold;">{{ $registro->usuario->name }}</div>
                     @endif
                 </div>
             </div>
             <div class="column">
                 <div class="firma-container">
                     @if ($registro->firma_representante)
-                        <img src="data:image/png;base64,{{ $registro->firma_representante }}" class="firma-img"
-                            alt="Firma Representante">
+                        <img src="{{ $registro->firma_representante }}" class="firma-img" alt="Firma Representante">
+                        {{-- <img [src]="registro.firma_representante" alt="Firma Representante" class="firma-img"> --}}
                     @else
                         <p style="color: #95a5a6; font-style: italic;">Sin firma</p>
                     @endif
                     <div class="firma-label">Firma del Representante</div>
-                    @if ($registro->representante_cliente)
-                        <div style="margin-top: 5px; font-weight: bold;">{{ $registro->representante_cliente }}</div>
+                    @if ($registro->representanteCliente)
+                        <div style="margin-top: 5px; font-weight: bold;">{{ $registro->representanteCliente->nombre }}
+                        </div>
                     @endif
                 </div>
             </div>
@@ -353,7 +367,7 @@
 
     <!-- Información del Sistema -->
     <div class="section">
-        <div class="section-title" style="background-color: #95a5a6;">ℹ️ Información del Sistema</div>
+        <div class="section-title" style="background-color: #95a5a6;">Información del Sistema</div>
         <div class="two-columns">
             <div class="column">
                 <div class="info-row">

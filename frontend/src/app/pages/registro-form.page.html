@@ -172,7 +172,7 @@
       <ion-card-content>
         <!-- Firma del Entregado -->
         <ion-item>
-          <ion-label position="stacked">Firma del Entregado</ion-label>
+          <ion-label position="stacked">Firma del Entregado *</ion-label>
           <div style="width: 100%; margin-top: 10px;">
             <ion-button expand="block" fill="outline" (click)="abrirFirmaEntregado()">
               <ion-icon name="create-outline" slot="start"></ion-icon>
@@ -186,7 +186,7 @@
 
         <!-- Firma del Representante -->
         <ion-item>
-          <ion-label position="stacked">Firma del Representante del Cliente</ion-label>
+          <ion-label position="stacked">Firma del Representante del Cliente *</ion-label>
           <div style="width: 100%; margin-top: 10px;">
             <ion-button expand="block" fill="outline" (click)="abrirFirmaRepresentante()">
               <ion-icon name="create-outline" slot="start"></ion-icon>
@@ -207,7 +207,7 @@
         Cancelar
       </ion-button>
       
-      <ion-button expand="block" color="success" (click)="confirmarGuardar()" [disabled]="registroForm.invalid || loading">
+      <ion-button expand="block" color="success" (click)="onSubmit()" [disabled]="registroForm.invalid || loading">
         <ion-icon name="save-outline" slot="start"></ion-icon>
         <span *ngIf="!loading">Guardar</span>
         <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>

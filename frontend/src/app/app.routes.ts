@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
+import { PermisosGuard } from './guards/permisos.guard';
 
 export const routes: Routes = [
   {
@@ -28,13 +29,15 @@ export const routes: Routes = [
     path: 'registro-form',
     loadComponent: () =>
       import('./pages/registro-form.page').then((m) => m.RegistroFormPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'crear_registro' },
   },
   {
     path: 'registro-lista',
     loadComponent: () =>
       import('./pages/registro-lista.page').then((m) => m.RegistroListaPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'ver_registros' },
   },
   {
     path: 'registro-detalle/:id',
@@ -42,7 +45,8 @@ export const routes: Routes = [
       import('./pages/registro-detalle.page').then(
         (m) => m.RegistroDetallePage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'ver_registros' },
   },
   {
     path: 'registro/nuevo',
@@ -55,7 +59,8 @@ export const routes: Routes = [
       import('./pages/configuracion/configuracion.page').then(
         (m) => m.ConfiguracionPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'dashboard',
@@ -69,7 +74,8 @@ export const routes: Routes = [
       import('./pages/clientes/clientes-lista.page').then(
         (m) => m.ClientesListaPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'clientes/nuevo',
@@ -77,7 +83,8 @@ export const routes: Routes = [
       import('./pages/clientes/cliente-form.page').then(
         (m) => m.ClienteFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'clientes/editar/:id',
@@ -85,7 +92,8 @@ export const routes: Routes = [
       import('./pages/clientes/cliente-form.page').then(
         (m) => m.ClienteFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'choferes',
@@ -93,37 +101,43 @@ export const routes: Routes = [
       import('./pages/choferes/choferes-lista.page').then(
         (m) => m.ChoferesListaPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'choferes/nuevo',
     loadComponent: () =>
       import('./pages/choferes/chofer-form.page').then((m) => m.ChoferFormPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'choferes/editar/:id',
     loadComponent: () =>
       import('./pages/choferes/chofer-form.page').then((m) => m.ChoferFormPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'placas',
     loadComponent: () =>
       import('./pages/placas/placas-lista.page').then((m) => m.PlacasListaPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'placas/nuevo',
     loadComponent: () =>
       import('./pages/placas/placa-form.page').then((m) => m.PlacaFormPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'placas/editar/:id',
     loadComponent: () =>
       import('./pages/placas/placa-form.page').then((m) => m.PlacaFormPage),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'descripciones',
@@ -131,7 +145,8 @@ export const routes: Routes = [
       import('./pages/descripciones/descripciones-lista.page').then(
         (m) => m.DescripcionesListaPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'descripciones/nuevo',
@@ -139,7 +154,8 @@ export const routes: Routes = [
       import('./pages/descripciones/descripcion-form.page').then(
         (m) => m.DescripcionFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'descripciones/editar/:id',
@@ -147,7 +163,8 @@ export const routes: Routes = [
       import('./pages/descripciones/descripcion-form.page').then(
         (m) => m.DescripcionFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'usuarios',
@@ -155,7 +172,8 @@ export const routes: Routes = [
       import('./pages/usuarios/usuarios-lista.page').then(
         (m) => m.UsuariosListaPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'usuarios/nuevo',
@@ -163,7 +181,8 @@ export const routes: Routes = [
       import('./pages/usuarios/usuario-form.page').then(
         (m) => m.UsuarioFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'usuarios/editar/:id',
@@ -171,7 +190,8 @@ export const routes: Routes = [
       import('./pages/usuarios/usuario-form.page').then(
         (m) => m.UsuarioFormPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'importar-choferes',
@@ -179,7 +199,8 @@ export const routes: Routes = [
       import('./pages/importar-choferes/importar-choferes.page').then(
         (m) => m.ImportarChoferesPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: 'importar-descripciones',
@@ -187,7 +208,8 @@ export const routes: Routes = [
       import('./pages/importar-descripciones/importar-descripciones.page').then(
         (m) => m.ImportarDescripcionesPage
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, PermisosGuard],
+    data: { permission: 'configuracion' },
   },
   {
     path: '**',

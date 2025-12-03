@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService, Usuario } from '../../services/api.service';
+import { ApiService, Usuario, Role } from '../../services/api.service';
 import { AlertController } from '@ionic/angular';
 
 @Component({
@@ -23,6 +23,7 @@ export class UsuarioFormPage implements OnInit {
   isEditMode = false;
   usuarioId?: number;
   loading = false;
+  roles: Role[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -35,11 +36,21 @@ export class UsuarioFormPage implements OnInit {
   }
 
   ngOnInit() {
+    this.cargarRoles();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
       this.usuarioId = parseInt(id);
       this.cargarUsuario();
+    }
+  }
+
+  async cargarRoles() {
+    try {
+      const response = await this.apiService.getRoles().toPromise();
+      this.roles = response?.data || [];
+    } catch (error) {
+      console.error('Error al cargar roles:', error);
     }
   }
 
@@ -52,6 +63,7 @@ export class UsuarioFormPage implements OnInit {
         this.isEditMode ? [] : [Validators.required, Validators.minLength(6)],
       ],
       activo: [true],
+      role_id: ['', Validators.required],
     });
   }
 
@@ -70,6 +82,7 @@ export class UsuarioFormPage implements OnInit {
           name: usuario.name,
           email: usuario.email,
           activo: usuario.activo,
+          role_id: usuario.role_id,
         });
       }
     } catch (error) {

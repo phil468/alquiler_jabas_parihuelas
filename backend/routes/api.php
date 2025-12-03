@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\RegistroController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,8 @@ Route::middleware(['user.active'])->prefix('v1')->group(function () {
     Route::apiResource('placas', PlacaController::class);
     Route::apiResource('descripciones-jabas', DescripcionJabaController::class);
     Route::apiResource('usuarios', UserController::class);
+    Route::get('roles', [RoleController::class, 'index']);
+    Route::get('roles/{id}', [RoleController::class, 'show']);
     
     // Registros principales
     Route::apiResource('registros', RegistroController::class);
@@ -61,6 +64,8 @@ Route::middleware(['user.active'])->prefix('v1')->group(function () {
     Route::post('registros/{id}/cambiar-estado', [RegistroController::class, 'cambiarEstado']);
     Route::post('registros/{id}/adjuntar-pdf', [RegistroController::class, 'adjuntarPdf']);
     Route::get('registros/{id}/generar-pdf', [RegistroController::class, 'generarPdf']);
+    Route::get('registros/{id}/descargar-guia', [RegistroController::class, 'descargarGuia']);
+    Route::get('registros/exportar/excel', [RegistroController::class, 'exportarExcel']);
     Route::get('registros/exportar/excel', [RegistroController::class, 'exportarExcel']);
     
     // Rutas de importación masiva

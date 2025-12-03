@@ -37,7 +37,11 @@ import {
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { ApiService, Registro } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
+import { PermisosService } from '../services/permisos.service';
 import { ImageViewerModalComponent } from '../components/image-viewer-modal.component';
+import { AdjuntarGuiaModalComponent } from '../components/adjuntar-guia-modal.component';
+import { PdfPreviewModalComponent } from '../components/pdf-preview-modal.component';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -102,6 +106,8 @@ export class RegistroListaPage implements OnInit {
 
   constructor(
     private apiService: ApiService,
+    private authService: AuthService,
+    public permisosService: PermisosService,
     private router: Router,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
@@ -263,29 +269,32 @@ export class RegistroListaPage implements OnInit {
           handler: async () => {
             try {
               if (registro.id) {
+                const currentUser = this.authService.getCurrentUser();
                 await this.apiService
-                  .cambiarEstadoRegistro(registro.id, 'aprobado')
+                  .cambiarEstadoRegistro(
+                    registro.id,
+                    'aprobado',
+                    undefined,
+                    currentUser?.id
+                  )
                   .toPromise();
 
-                const toast = await this.toastCtrl.create({
+                const successAlert = await this.alertCtrl.create({
+                  header: 'Éxito',
                   message: 'Registro aprobado correctamente',
-                  duration: 2000,
-                  color: 'success',
-                  position: 'top',
+                  buttons: ['OK'],
                 });
-                await toast.present();
+                await successAlert.present();
 
                 this.aplicarFiltros();
-                // this.cargarRegistros(); // Recargar lista
               }
             } catch (error) {
-              const toast = await this.toastCtrl.create({
+              const errorAlert = await this.alertCtrl.create({
+                header: 'Error',
                 message: 'Error al aprobar el registro',
-                duration: 3000,
-                color: 'danger',
-                position: 'top',
+                buttons: ['OK'],
               });
-              await toast.present();
+              await errorAlert.present();
             }
           },
         },
@@ -322,44 +331,43 @@ export class RegistroListaPage implements OnInit {
           cssClass: 'danger',
           handler: async (data) => {
             if (!data.motivo || data.motivo.trim().length < 10) {
-              const toast = await this.toastCtrl.create({
+              const errorAlert = await this.alertCtrl.create({
+                header: 'Error',
                 message: 'El motivo debe tener al menos 10 caracteres',
-                duration: 3000,
-                color: 'warning',
-                position: 'top',
+                buttons: ['OK'],
               });
-              await toast.present();
+              await errorAlert.present();
               return false;
             }
 
             try {
               if (registro.id) {
+                const currentUser = this.authService.getCurrentUser();
                 await this.apiService
                   .cambiarEstadoRegistro(
                     registro.id,
                     'rechazado',
-                    data.motivo.trim()
+                    data.motivo.trim(),
+                    currentUser?.id
                   )
                   .toPromise();
 
-                const toast = await this.toastCtrl.create({
-                  message: 'Registro rechazado correctamente',
-                  duration: 2000,
-                  color: 'success',
-                  position: 'top',
+                const successAlert = await this.alertCtrl.create({
+                  header: 'Registro Rechazado',
+                  message: 'El registro ha sido rechazado correctamente',
+                  buttons: ['OK'],
                 });
-                await toast.present();
+                await successAlert.present();
+
                 this.aplicarFiltros();
-                // this.cargarRegistros(); // Recargar lista
               }
             } catch (error) {
-              const toast = await this.toastCtrl.create({
+              const errorAlert = await this.alertCtrl.create({
+                header: 'Error',
                 message: 'Error al rechazar el registro',
-                duration: 3000,
-                color: 'danger',
-                position: 'top',
+                buttons: ['OK'],
               });
-              await toast.present();
+              await errorAlert.present();
             }
             return true;
           },
@@ -388,36 +396,177 @@ export class RegistroListaPage implements OnInit {
     await modal.present();
   }
 
-  async adjuntarPDF(registro: Registro) {
-    // Crear input file dinámicamente
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/pdf';
+  async verGuiaPDF(registro: Registro, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
 
-    input.onchange = async (event: any) => {
-      const file = event.target.files[0];
-      if (!file) return;
+    if (!registro.pdf_path) {
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'No hay guía de remisión adjunta',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
 
-      if (file.type !== 'application/pdf') {
-        alert('Únicamente se permiten archivos PDF');
+    try {
+      const blob = await this.apiService
+        .descargarGuiaPdf(registro.id!)
+        .toPromise();
+
+      if (!blob) {
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: 'Error al obtener el PDF de la guía',
+          buttons: ['OK'],
+        });
+        await alert.present();
         return;
       }
 
+      const fileName = `Guia_${registro.serie_guia || ''}-${
+        registro.numero_guia || registro.id
+      }.pdf`;
+
+      // Abrir modal de vista previa
+      const modal = await this.modalCtrl.create({
+        component: PdfPreviewModalComponent,
+        componentProps: {
+          pdfBlob: blob,
+          fileName: fileName,
+        },
+      });
+
+      await modal.present();
+
+      const { data, role } = await modal.onWillDismiss();
+
+      // Si el usuario presiona "Descargar" en el modal
+      if (role === 'download' && data?.download) {
+        this.descargarGuiaPDF(registro);
+      }
+    } catch (error) {
+      console.error('Error al visualizar la guía:', error);
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'Error al visualizar la guía de remisión',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
+  }
+
+  async descargarGuiaPDF(registro: Registro, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!registro.pdf_path) {
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'No hay guía de remisión adjunta',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    try {
+      const blob = await this.apiService
+        .descargarGuiaPdf(registro.id!)
+        .toPromise();
+
+      if (!blob) {
+        const alert = await this.alertCtrl.create({
+          header: 'Error',
+          message: 'Error al descargar el PDF de la guía',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
+
+      const fileName = `Guia_${registro.serie_guia || ''}-${
+        registro.numero_guia || registro.id
+      }.pdf`;
+
+      // Web: usar descarga tradicional
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al descargar la guía:', error);
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'Error al descargar la guía de remisión',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
+  }
+
+  async adjuntarPDF(registro: Registro, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    // Validar que el registro esté aprobado
+    if (registro.estado !== 'aprobado') {
+      const alert = await this.alertCtrl.create({
+        header: 'Acción no permitida',
+        message:
+          'Solo se puede adjuntar una guía cuando el registro está aprobado',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    // Abrir modal para adjuntar guía (igual que en registro-detalle)
+    const modal = await this.modalCtrl.create({
+      component: AdjuntarGuiaModalComponent,
+      componentProps: {
+        registroId: registro.id,
+      },
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'confirm' && data) {
       try {
-        if (registro.id) {
-          await this.apiService
-            .adjuntarPdfRegistro(registro.id, file)
-            .toPromise();
-          alert('PDF adjuntado exitosamente. Extrayendo datos...');
-          this.cargarRegistros(); // Recargar para ver cambios
+        // Enviar FormData al backend
+        const response = await this.apiService
+          .adjuntarPdfRegistro(registro.id!, data.formData)
+          .toPromise();
+
+        if (response?.success) {
+          const successAlert = await this.alertCtrl.create({
+            header: 'Éxito',
+            message: `Guía de Remisión ${data.data.serie_guia}-${data.data.numero_guia} adjuntada correctamente`,
+            buttons: ['OK'],
+          });
+          await successAlert.present();
+
+          // Recargar la lista
+          this.aplicarFiltros();
         }
       } catch (error) {
-        console.error('Error al adjuntar PDF:', error);
-        alert('Error al adjuntar el PDF');
+        console.error('Error al adjuntar guía:', error);
+        const errorAlert = await this.alertCtrl.create({
+          header: 'Error',
+          message: 'Error al adjuntar la guía de remisión',
+          buttons: ['OK'],
+        });
+        await errorAlert.present();
       }
-    };
-
-    input.click();
+    }
   }
 
   async exportarExcel() {

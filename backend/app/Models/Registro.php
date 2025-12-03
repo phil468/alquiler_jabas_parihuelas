@@ -35,6 +35,12 @@ class Registro extends Model
         'guia_remision',
         'pdf_path',
         'user_id',
+        'serie_guia',
+        'numero_guia',
+        'aprobado_por',
+        'rechazado_por',
+        'aprobado_en',
+        'rechazado_en',
     ];
 
     protected $casts = [
@@ -84,6 +90,16 @@ class Registro extends Model
     public function representanteCliente()
     {
         return $this->belongsTo(RepresentanteCliente::class, 'representante_cliente_id');
+    }
+
+    public function aprobadoPor()
+    {
+        return $this->belongsTo(User::class, 'aprobado_por');
+    }
+
+    public function rechazadoPor()
+    {
+        return $this->belongsTo(User::class, 'rechazado_por');
     }
 
     // Scopes

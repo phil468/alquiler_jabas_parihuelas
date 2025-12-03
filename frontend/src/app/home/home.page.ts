@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
   IonHeader,
@@ -18,6 +19,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { addCircle, list, settings, statsChart } from 'ionicons/icons';
+import { PermisosService } from '../services/permisos.service';
 
 @Component({
   selector: 'app-home',
@@ -25,6 +27,7 @@ import { addCircle, list, settings, statsChart } from 'ionicons/icons';
   styleUrls: ['home.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -42,7 +45,7 @@ import { addCircle, list, settings, statsChart } from 'ionicons/icons';
   ],
 })
 export class HomePage {
-  constructor(private router: Router) {
+  constructor(private router: Router, public permisos: PermisosService) {
     addIcons({ addCircle, list, settings, statsChart });
   }
 

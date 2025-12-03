@@ -32,7 +32,11 @@ class RegistrosExport implements FromCollection, WithHeadings, WithMapping, With
             'placa1', 
             'placa2', 
             'descripcionJaba1', 
-            'descripcionJaba2'
+            'descripcionJaba2',
+            'usuario',
+            'aprobadoPor',
+            'rechazadoPor',
+            'representanteCliente'
         ]);
 
         // Aplicar filtros si existen
@@ -72,10 +76,16 @@ class RegistrosExport implements FromCollection, WithHeadings, WithMapping, With
             'Descripción Jaba 2',
             'Cantidad Jaba 2',
             'Cantidad Parihuelas',
-            'Guía Remisión',
+            'Serie Guía',
+            'Número Guía',
             'Observaciones',
             'Estado',
             'Motivo Rechazo',
+            'Creado Por',
+            'Aprobado Por',
+            'Fecha Aprobación',
+            'Rechazado Por',
+            'Fecha Rechazo',
             'Fecha Creación',
         ];
     }
@@ -91,7 +101,7 @@ class RegistrosExport implements FromCollection, WithHeadings, WithMapping, With
             $registro->numero_registro,
             $registro->cliente->nombre ?? '',
             $registro->cliente->ruc ?? '',
-            $registro->representante_cliente ?? '',
+            $registro->representanteCliente->nombre ?? '',
             $registro->chofer->nombre ?? '',
             $registro->chofer->dni ?? '',
             $registro->placa1->numero_placa ?? '',
@@ -101,10 +111,16 @@ class RegistrosExport implements FromCollection, WithHeadings, WithMapping, With
             $registro->descripcionJaba2->descripcion ?? '',
             $registro->cantidad_jabas_2 ?? 0,
             $registro->cantidad_parihuelas ?? 0,
-            $registro->guia_remision ?? '',
+            $registro->serie_guia ?? '',
+            $registro->numero_guia ?? '',
             $registro->observaciones ?? '',
             strtoupper($registro->estado),
             $registro->motivo_rechazo ?? '',
+            $registro->usuario->name ?? '',
+            $registro->aprobadoPor->name ?? '',
+            $registro->aprobado_en ? \Carbon\Carbon::parse($registro->aprobado_en)->format('d/m/Y H:i:s') : '',
+            $registro->rechazadoPor->name ?? '',
+            $registro->rechazado_en ? \Carbon\Carbon::parse($registro->rechazado_en)->format('d/m/Y H:i:s') : '',
             $registro->created_at->format('d/m/Y H:i:s'),
         ];
     }

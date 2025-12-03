@@ -24,6 +24,7 @@ class User extends Authenticatable
         'microsoft_id',
         'avatar',
         'activo',
+        'role_id',
     ];
 
     /**
@@ -46,4 +47,31 @@ class User extends Authenticatable
         'password' => 'hashed',
         'activo' => 'boolean',
     ];
+
+    /**
+     * Relación con rol
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Verificar si el usuario tiene un permiso específico
+     */
+    public function tienePermiso($permiso)
+    {
+        if (!$this->role) {
+            return false;
+        }
+        return $this->role->tienePermiso($permiso);
+    }
+
+    /**
+     * Verificar si el usuario es administrador
+     */
+    public function esAdministrador()
+    {
+        return $this->role && $this->role->slug === 'administrador';
+    }
 }

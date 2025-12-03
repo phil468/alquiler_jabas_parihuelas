@@ -37,6 +37,10 @@
       <ion-label (click)="editarUsuario(usuario.id)">
         <h2><strong>{{ usuario.name }}</strong></h2>
         <p>{{ usuario.email }}</p>
+        <p *ngIf="usuario.role">
+          <ion-icon name="shield-checkmark-outline" color="tertiary"></ion-icon>
+          {{ usuario.role.nombre }}
+        </p>
         <p *ngIf="usuario.microsoft_id">
           <ion-icon name="logo-microsoft" color="primary"></ion-icon>
           Conectado con Microsoft

@@ -73,13 +73,33 @@ export interface DescripcionJaba {
   cliente?: Cliente;
 }
 
+export interface Role {
+  id: number;
+  nombre: string;
+  slug: string;
+  descripcion?: string;
+  permisos: {
+    crear_registro: boolean;
+    ver_registros: boolean;
+    aprobar_registro: boolean;
+    rechazar_registro: boolean;
+    adjuntar_guia: boolean;
+    configuracion: boolean;
+    exportar_excel: boolean;
+    generar_pdf: boolean;
+    eliminar_registro: boolean;
+  };
+}
+
 export interface Usuario {
   id: number;
   name: string;
   email: string;
-  activo: boolean;
+  activo?: boolean | null;
   microsoft_id?: string;
   avatar?: string;
+  role_id?: number;
+  role?: Role;
   created_at?: string;
   updated_at?: string;
 }
@@ -109,6 +129,12 @@ export interface Registro {
   guia_remision?: string;
   pdf_path?: string;
   user_id?: number;
+  serie_guia?: string;
+  numero_guia?: string;
+  aprobado_por?: number;
+  rechazado_por?: number;
+  aprobado_en?: string;
+  rechazado_en?: string;
   created_at?: string;
   updated_at?: string;
   // Relaciones
@@ -116,10 +142,12 @@ export interface Registro {
   chofer?: Chofer;
   placa1?: Placa;
   placa2?: Placa;
-  descripcionJaba1?: DescripcionJaba;
-  descripcionJaba2?: DescripcionJaba;
+  descripcion_jaba1?: DescripcionJaba;
+  descripcion_jaba2?: DescripcionJaba;
   usuario?: Usuario;
   representante_cliente?: RepresentanteCliente;
+  aprobadoPor?: Usuario;
+  rechazadoPor?: Usuario;
 }
 
 export interface ApiResponse<T> {
@@ -425,27 +453,33 @@ export class ApiService {
   cambiarEstadoRegistro(
     id: number,
     estado: string,
-    motivo_rechazo?: string
+    motivo_rechazo?: string,
+    user_id?: number
   ): Observable<ApiResponse<Registro>> {
     return this.http.post<ApiResponse<Registro>>(
       `${this.apiUrl}/registros/${id}/cambiar-estado`,
       {
         estado,
         motivo_rechazo,
+        user_id,
       }
     );
   }
 
   adjuntarPdfRegistro(
     id: number,
-    pdf: File
+    formData: FormData
   ): Observable<ApiResponse<Registro>> {
-    const formData = new FormData();
-    formData.append('pdf', pdf);
     return this.http.post<ApiResponse<Registro>>(
       `${this.apiUrl}/registros/${id}/adjuntar-pdf`,
       formData
     );
+  }
+
+  descargarGuiaPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/registros/${id}/descargar-guia`, {
+      responseType: 'blob',
+    });
   }
 
   generarPdfRegistro(id: number): Observable<Blob> {
@@ -528,6 +562,15 @@ export class ApiService {
 
   deleteUsuario(id: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${this.apiUrl}/usuarios/${id}`);
+  }
+
+  // Roles
+  getRoles(): Observable<ApiResponse<Role[]>> {
+    return this.http.get<ApiResponse<Role[]>>(`${this.apiUrl}/roles`);
+  }
+
+  getRole(id: number): Observable<ApiResponse<Role>> {
+    return this.http.get<ApiResponse<Role>>(`${this.apiUrl}/roles/${id}`);
   }
 
   // Importación masiva

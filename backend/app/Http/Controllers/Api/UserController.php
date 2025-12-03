@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::with('role')->orderBy('name')->get();
         return response()->json([
             'success' => true,
             'data' => $users
@@ -27,7 +27,8 @@ class UserController extends Controller
      */
     public function activos()
     {
-        $users = User::where('activo', true)
+        $users = User::with('role')
+            ->where('activo', true)
             ->orderBy('name')
             ->get();
         
@@ -61,7 +62,10 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'activo' => $request->activo ?? true,
+            'role_id' => $request->role_id ?? null,
         ]);
+
+        $user->load('role');
 
         return response()->json([
             'success' => true,
@@ -75,7 +79,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::find($id);
+        $user = User::with('role')->find($id);
 
         if (!$user) {
             return response()->json([
@@ -129,7 +133,12 @@ class UserController extends Controller
             $user->activo = $request->activo;
         }
 
+        if ($request->has('role_id')) {
+            $user->role_id = $request->role_id;
+        }
+
         $user->save();
+        $user->load('role');
 
         return response()->json([
             'success' => true,

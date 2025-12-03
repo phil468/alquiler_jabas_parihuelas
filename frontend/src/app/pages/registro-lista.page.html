@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Lista de Registros</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="exportarExcel()">
+      <ion-button *ngIf="permisosService.puedeExportarExcel()" (click)="exportarExcel()">
         <ion-icon name="download-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -137,6 +137,19 @@
             <span *ngIf="registro.cantidad_jabas_2"> + {{ registro.cantidad_jabas_2 }}</span>
             | Parihuelas: {{ registro.cantidad_parihuelas }}
           </p>
+          <!-- PARRAFO DE NUMERO DE GUIA: SERIE-NUMERO SI ES QUE TIENE ESTOS DATOS -->
+          <p *ngIf="registro.serie_guia || registro.numero_guia">
+            <ion-icon name="document-text-outline"></ion-icon>
+            Guía: 
+            <span *ngIf="registro.serie_guia">{{ registro.serie_guia }}-</span>{{ registro.numero_guia }}
+            <!-- Botones de acción (solo si tiene PDF adjunto) -->
+            <ion-button *ngIf="registro.pdf_path" size="" fill="clear" color="primary" (click)="verGuiaPDF(registro, $event)" style="--padding-start: 4px; --padding-end: 4px;">
+              <ion-icon slot="icon-only" name="eye-outline" size="small"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="registro.pdf_path" size="" fill="clear" color="success" (click)="descargarGuiaPDF(registro, $event)" style="--padding-start: 4px; --padding-end: 4px;">
+              <ion-icon slot="icon-only" name="download-outline" size="small"></ion-icon>
+            </ion-button>
+          </p>
         </ion-label>
 
         <!-- Indicador de imagen -->
@@ -150,19 +163,20 @@
           (click)="verImagen(registro.imagen_path); $event.stopPropagation()">
         </ion-icon>
 
-        <!-- Botón de subir/ver PDF -->
+        <!-- Botón de subir/ver PDF (solo si está aprobado y tiene permiso) -->
         <ion-icon 
+          *ngIf="registro.estado === 'aprobado' && permisosService.puedeAdjuntarGuia()"
           [name]="registro.pdf_path ? 'document-text' : 'cloud-upload-outline'" 
           [color]="registro.pdf_path ? 'success' : 'medium'"
           slot="end"
           size="large"
           style="margin-right: 12px; cursor: pointer;"
-          (click)="adjuntarPDF(registro); $event.stopPropagation()">
+          (click)="adjuntarPDF(registro, $event)">
         </ion-icon>
 
-        <!-- Botón Aprobar (solo si está por aprobar) -->
+        <!-- Botón Aprobar (solo si está por aprobar y tiene permiso) -->
         <ion-icon 
-          *ngIf="registro.estado === 'por_aprobar'"
+          *ngIf="registro.estado === 'por_aprobar' && permisosService.puedeAprobarRegistro()"
           name="checkmark-circle-outline" 
           color="success"
           slot="end"
@@ -171,9 +185,9 @@
           (click)="aprobar(registro); $event.stopPropagation()">
         </ion-icon>
 
-        <!-- Botón Rechazar (solo si está por aprobar) -->
+        <!-- Botón Rechazar (solo si está por aprobar y tiene permiso) -->
         <ion-icon 
-          *ngIf="registro.estado === 'por_aprobar'"
+          *ngIf="registro.estado === 'por_aprobar' && permisosService.puedeRechazarRegistro()"
           name="close-circle-outline" 
           color="danger"
           slot="end"
@@ -191,7 +205,7 @@
     <ion-icon name="document-text-outline" size="large" color="medium"></ion-icon>
     <h3>No hay registros</h3>
     <p>No se encontraron registros con los filtros aplicados.</p>
-    <ion-button (click)="nuevoRegistro()" color="primary">
+    <ion-button *ngIf="permisosService.puedeCrearRegistro()" (click)="nuevoRegistro()" color="primary">
       <ion-icon slot="start" name="add-circle-outline"></ion-icon>
       Nuevo Registro
     </ion-button>
@@ -218,8 +232,8 @@
     </ion-row>
   </ion-grid>
 
-  <!-- FAB para nuevo registro -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <!-- FAB para nuevo registro (solo si tiene permiso) -->
+  <ion-fab *ngIf="permisosService.puedeCrearRegistro()" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="nuevoRegistro()" color="primary">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

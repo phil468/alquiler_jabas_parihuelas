@@ -120,6 +120,7 @@ class AuthController extends Controller
             $user->save();
 
             // Crear token de Sanctum
+            $user->load('role');
             $token = $user->createToken('auth-token')->plainTextToken;
 
             // Preparar datos del usuario (usar base64 para compatibilidad)
@@ -128,6 +129,12 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'avatar' => $user->avatar,
+                'role' => $user->role ? [
+                    'id' => $user->role->id,
+                    'nombre' => $user->role->nombre,
+                    'slug' => $user->role->slug,
+                    'permisos' => $user->role->permisos,
+                ] : null,
             ]));
 
             // Detectar si viene desde móvil
@@ -203,6 +210,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+        $user->load('role');
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
@@ -213,6 +221,12 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar ?? null,
+                    'role' => $user->role ? [
+                        'id' => $user->role->id,
+                        'nombre' => $user->role->nombre,
+                        'slug' => $user->role->slug,
+                        'permisos' => $user->role->permisos,
+                    ] : null,
                 ],
                 'token' => $token,
             ],

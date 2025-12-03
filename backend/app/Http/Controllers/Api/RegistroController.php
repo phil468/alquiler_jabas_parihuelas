@@ -29,6 +29,8 @@ class RegistroController extends Controller
             'descripcionJaba2',
             'usuario',
             'representanteCliente',
+            'aprobadoPor',
+            'rechazadoPor',
         ]);
 
         // Filtros
@@ -129,7 +131,18 @@ class RegistroController extends Controller
      */
     public function show(string $id)
     {
-        $registro = Registro::with(['cliente', 'chofer', 'placa1', 'placa2', 'descripcionJaba1', 'descripcionJaba2', 'usuario', 'representanteCliente'])->find($id);
+        $registro = Registro::with([
+            'cliente', 
+            'chofer', 
+            'placa1', 
+            'placa2', 
+            'descripcionJaba1', 
+            'descripcionJaba2', 
+            'usuario', 
+            'representanteCliente',
+            'aprobadoPor',
+            'rechazadoPor'
+        ])->find($id);
 
         if (!$registro) {
             return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
@@ -203,21 +216,48 @@ class RegistroController extends Controller
             return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
         }
 
-        $registro->update([
-            'estado' => $request->estado,
-            'motivo_rechazo' => $request->motivo_rechazo
+        $nuevoEstado = $request->estado;
+        $userId = auth()->id() ?? $request->user_id;
+
+        $updateData = [
+            'estado' => $nuevoEstado,
+        ];
+
+        if ($nuevoEstado === 'aprobado') {
+            $updateData['aprobado_por'] = $userId;
+            $updateData['aprobado_en'] = now();
+            $updateData['rechazado_por'] = null;
+            $updateData['rechazado_en'] = null;
+            $updateData['motivo_rechazo'] = null;
+        } elseif ($nuevoEstado === 'rechazado') {
+            $updateData['rechazado_por'] = $userId;
+            $updateData['rechazado_en'] = now();
+            $updateData['aprobado_por'] = null;
+            $updateData['aprobado_en'] = null;
+            $updateData['motivo_rechazo'] = $request->motivo_rechazo;
+        }
+
+        $registro->update($updateData);
+
+        $registro->load([
+            'cliente', 'chofer', 'placa1', 'placa2',
+            'descripcionJaba1', 'descripcionJaba2',
+            'usuario', 'representanteCliente',
+            'aprobadoPor', 'rechazadoPor'
         ]);
 
         return response()->json(['success' => true, 'message' => 'Estado actualizado', 'data' => $registro]);
     }
 
     /**
-     * Adjuntar PDF y extraer número de guía de remisión
+     * Adjuntar PDF y datos de guía de remisión
      */
     public function adjuntarPdf(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'pdf' => 'required|file|mimes:pdf|max:10240', // Máximo 10MB
+            'serie_guia' => 'required|string|max:10',
+            'numero_guia' => 'required|string|max:10',
+            'pdf' => 'nullable|file|mimes:pdf|max:10240', // Máximo 10MB, opcional
         ]);
 
         if ($validator->fails()) {
@@ -232,35 +272,51 @@ class RegistroController extends Controller
             return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
         }
 
+        // Validar que el registro esté aprobado
+        if ($registro->estado !== 'aprobado') {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Solo se puede adjuntar una guía cuando el registro está aprobado'
+            ], 422);
+        }
+
         try {
-            // Guardar PDF
-            $path = $request->file('pdf')->store('registros/pdfs', 'public');
-            
-            // Intentar extraer número de guía de remisión del PDF
-            $guiaRemision = $this->extraerGuiaRemisionDePdf($request->file('pdf'));
-            
-            // Eliminar PDF anterior si existe
-            if ($registro->pdf_path) {
-                Storage::disk('public')->delete($registro->pdf_path);
+            $pdfPath = $registro->pdf_path;
+
+            // Guardar PDF si se envió
+            if ($request->hasFile('pdf')) {
+                $path = $request->file('pdf')->store('registros/pdfs', 'public');
+                
+                // Eliminar PDF anterior si existe
+                if ($registro->pdf_path) {
+                    Storage::disk('public')->delete($registro->pdf_path);
+                }
+                
+                $pdfPath = $path;
             }
 
-            // Actualizar registro
+            // Actualizar registro con serie y número
             $registro->update([
-                'pdf_path' => $path,
-                'guia_remision' => $guiaRemision ?? $registro->guia_remision
+                'pdf_path' => $pdfPath,
+                'serie_guia' => $request->serie_guia,
+                'numero_guia' => $request->numero_guia
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'PDF adjuntado exitosamente',
-                'data' => $registro->fresh(),
-                'guia_extraida' => $guiaRemision ? true : false
+                'message' => 'Guía de remisión adjuntada exitosamente',
+                'data' => $registro->fresh([
+                    'cliente', 'chofer', 'placa1', 'placa2',
+                    'descripcionJaba1', 'descripcionJaba2',
+                    'usuario', 'representanteCliente',
+                    'aprobadoPor', 'rechazadoPor'
+                ])
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al procesar el PDF',
+                'message' => 'Error al procesar la guía',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -325,7 +381,8 @@ class RegistroController extends Controller
     public function generarPdf(string $id)
     {
         $registro = Registro::with([
-            'cliente', 
+            'cliente',
+            'representanteCliente',
             'chofer', 
             'placa1', 
             'placa2', 
@@ -361,5 +418,33 @@ class RegistroController extends Controller
         $nombreArchivo = 'Registros_' . date('Ymd_His') . '.xlsx';
         
         return Excel::download(new RegistrosExport($filtros), $nombreArchivo);
+    }
+
+    /**
+     * Descargar PDF de guía de remisión adjunta
+     */
+    public function descargarGuia(string $id)
+    {
+        $registro = Registro::find($id);
+        
+        if (!$registro) {
+            return response()->json(['success' => false, 'message' => 'Registro no encontrado'], 404);
+        }
+
+        if (!$registro->pdf_path) {
+            return response()->json(['success' => false, 'message' => 'No hay guía de remisión adjunta'], 404);
+        }
+
+        $filePath = storage_path('app/public/' . $registro->pdf_path);
+
+        if (!file_exists($filePath)) {
+            return response()->json(['success' => false, 'message' => 'Archivo no encontrado'], 404);
+        }
+
+        $fileName = "Guia_{$registro->serie_guia}-{$registro->numero_guia}.pdf";
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 }
