@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\AppVersionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,11 @@ use App\Http\Controllers\Api\RoleController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Ruta pública para verificar versión de la app
+Route::prefix('v1/app')->group(function () {
+    Route::get('version', [AppVersionController::class, 'getCurrentVersion']);
 });
 
 // Rutas de autenticación (públicas)
