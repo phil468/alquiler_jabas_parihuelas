@@ -47,6 +47,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
+            'role_id' => 'nullable|exists:roles,id',
         ]);
 
         if ($validator->fails()) {
@@ -112,7 +113,19 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
+            'role_id' => 'nullable|exists:roles,id',
         ]);
+
+        // Validación adicional: si password está presente pero es una cadena vacía o solo espacios
+        if ($request->has('password') && trim($request->password) !== '' && strlen($request->password) < 6) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña debe tener al menos 6 caracteres',
+                'errors' => [
+                    'password' => ['La contraseña debe tener al menos 6 caracteres']
+                ]
+            ], 422);
+        }
 
         if ($validator->fails()) {
             return response()->json([
@@ -125,7 +138,8 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         
-        if ($request->filled('password')) {
+        // Solo actualizar la contraseña si se proporcionó y no está vacía
+        if ($request->filled('password') && trim($request->password) !== '') {
             $user->password = Hash::make($request->password);
         }
         
