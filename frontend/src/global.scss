@@ -69,3 +69,33 @@
     --border-radius: 0;
   }
 }
+
+/* Alerta de Actualización */
+.update-alert {
+  .alert-head {
+    text-align: center;
+  }
+
+  .alert-message {
+    text-align: left;
+    white-space: pre-line; /* Respeta los saltos de línea \n */
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ion-text-color);
+    padding: 10px 0;
+  }
+
+  .alert-button-group {
+    justify-content: space-between;
+    padding-top: 10px;
+    
+    button.secondary {
+      color: var(--ion-color-medium);
+    }
+    
+    button.primary {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+  }
+}

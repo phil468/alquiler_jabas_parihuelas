@@ -20,6 +20,7 @@ import {
 } from '@ionic/angular/standalone';
 import { AuthService } from './services/auth.service';
 import { PermisosService } from './services/permisos.service';
+import { VersionCheckService } from './services/version-check.service';
 
 @Component({
   selector: 'app-root',
@@ -131,12 +132,23 @@ export class AppComponent {
     private authService: AuthService,
     private permisosService: PermisosService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private versionCheckService: VersionCheckService
   ) {
     // Suscribirse a cambios del usuario autenticado
     this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
+
+    // Verificar actualizaciones al iniciar la app
+    this.checkAppVersion();
+  }
+
+  private async checkAppVersion() {
+    // Esperar un momento para que la app termine de cargar
+    setTimeout(async () => {
+      await this.versionCheckService.checkForUpdates();
+    }, 2000); // Esperar 2 segundos después de iniciar
   }
 
   get isLoginPage(): boolean {

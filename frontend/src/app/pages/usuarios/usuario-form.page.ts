@@ -41,6 +41,12 @@ export class UsuarioFormPage implements OnInit {
     if (id) {
       this.isEditMode = true;
       this.usuarioId = parseInt(id);
+      // Actualizar validaciones para modo edición
+      // Si el usuario escribe algo, debe tener al menos 6 caracteres
+      this.usuarioForm
+        .get('password')
+        ?.setValidators([Validators.minLength(6)]);
+      this.usuarioForm.get('password')?.updateValueAndValidity();
       this.cargarUsuario();
     }
   }
