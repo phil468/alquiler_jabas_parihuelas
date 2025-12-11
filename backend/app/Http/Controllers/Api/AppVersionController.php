@@ -17,7 +17,7 @@ class AppVersionController extends Controller
             'data' => [
                 'version' => '1.2.0', // Actualiza esto cada vez que publiques una nueva versión
                 'versionCode' => 3, // Incrementa esto en cada release
-                'downloadUrl' => env('APP_URL', 'https://apps.vanguardfresh.pe') . '/jabas_y_parihuelas/app-release.apk',
+                'downloadUrl' => env('FRONTEND_URL', 'https://apps.vanguardfresh.pe/jabas_y_parihuelas') . '/app-release.apk',
                 'forceUpdate' => false, // Cambia a true si es una actualización crítica
                 'releaseNotes' => [
                     'Versión inicial del sistema',
