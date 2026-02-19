@@ -72,7 +72,7 @@ class DescripcionJabaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'codigo' => 'required|string|max:20|unique:descripciones_jabas,codigo',
             'descripcion' => 'required|string|max:255',
             'color' => 'nullable|string|max:50',
@@ -138,7 +138,7 @@ class DescripcionJabaController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'codigo' => 'required|string|max:20|unique:descripciones_jabas,codigo,' . $id,
             'descripcion' => 'required|string|max:255',
             'color' => 'nullable|string|max:50',

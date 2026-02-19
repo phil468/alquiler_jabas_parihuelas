@@ -17,6 +17,17 @@
       </ion-card-header>
 
       <ion-card-content>
+        <!-- Cliente (obligatorio) -->
+        <ion-item [class.input-invalid]="isFieldInvalid('cliente_id')">
+          <ion-label position="stacked">Cliente *</ion-label>
+          <ion-select formControlName="cliente_id" placeholder="Seleccione un cliente">
+            <ion-select-option *ngFor="let c of clientes" [value]="c.id">{{ c.nombre }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-note color="danger" *ngIf="getErrorMessage('cliente_id')">
+          {{ getErrorMessage('cliente_id') }}
+        </ion-note>
+
         <!-- Código -->
         <ion-item>
           <ion-label position="stacked">Código *</ion-label>

@@ -7,7 +7,7 @@
     </ion-buttons>
     <ion-title>{{ isEditMode ? 'Editar Chofer' : 'Nuevo Chofer' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="guardar()" [disabled]="loading">
+      <ion-button (click)="guardar()" [disabled]="loading || choferForm.invalid">
         <ion-icon name="checkmark"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -46,7 +46,7 @@
           </ion-select>
         </ion-item>
 
-        <ion-item>
+        <ion-item [class.input-invalid]="isFieldInvalid('nombre')">
           <ion-label position="stacked">Nombre Completo <ion-text color="danger">*</ion-text></ion-label>
           <ion-input 
             formControlName="nombre" 
@@ -58,7 +58,7 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <ion-item [class.input-invalid]="isFieldInvalid('dni')">
           <ion-label position="stacked">DNI <ion-text color="danger">*</ion-text></ion-label>
           <ion-input 
             formControlName="dni" 
@@ -71,7 +71,7 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <ion-item [class.input-invalid]="isFieldInvalid('licencia')">
           <ion-label position="stacked">Número de Licencia</ion-label>
           <ion-input 
             formControlName="licencia" 
@@ -83,7 +83,7 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <ion-item [class.input-invalid]="isFieldInvalid('telefono')">
           <ion-label position="stacked">Teléfono</ion-label>
           <ion-input 
             formControlName="telefono" 
@@ -107,7 +107,7 @@
     </ion-card>
 
     <div class="ion-padding">
-      <ion-button expand="block" (click)="guardar()" [disabled]="loading">
+      <ion-button expand="block" (click)="guardar()" [disabled]="loading || choferForm.invalid">
         <ion-icon name="save-outline" slot="start"></ion-icon>
         {{ isEditMode ? 'Actualizar Chofer' : 'Crear Chofer' }}
       </ion-button>

@@ -31,7 +31,7 @@ export class ChoferFormPage implements OnInit {
     private apiService: ApiService,
     private router: Router,
     private route: ActivatedRoute,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {
     this.choferForm = this.fb.group({
       cliente_id: [''],
@@ -93,6 +93,23 @@ export class ChoferFormPage implements OnInit {
       Object.keys(this.choferForm.controls).forEach((key) => {
         this.choferForm.get(key)?.markAsTouched();
       });
+
+      // Construir mensaje resumen de los errores del formulario
+      const mensajes: string[] = [];
+      Object.keys(this.choferForm.controls).forEach((key) => {
+        const msg = this.getErrorMessage(key);
+        if (msg) mensajes.push(msg);
+      });
+
+      const alert = await this.alertController.create({
+        header: 'Errores de validación',
+        message: mensajes.length
+          ? mensajes.join('<br>')
+          : 'Complete los campos obligatorios.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+
       return;
     }
 
@@ -141,13 +158,33 @@ export class ChoferFormPage implements OnInit {
       this.volver();
     } catch (error: any) {
       console.error('Error al guardar chofer:', error);
-      let mensaje = 'Error al guardar el chofer';
 
-      if (error?.error?.message) {
-        mensaje = error.error.message;
+      // Si Laravel devuelve errores de validación (422), mostrar cada mensaje al usuario
+      if (error?.status === 422 && error?.error?.errors) {
+        const errs = error.error.errors;
+        const mensajes: string[] = [];
+        Object.values(errs).forEach((v: any) => {
+          if (Array.isArray(v)) {
+            v.forEach((m) => mensajes.push(m));
+          } else if (typeof v === 'string') {
+            mensajes.push(v);
+          }
+        });
+
+        const alert = await this.alertController.create({
+          header: 'Errores de validación',
+          // mostrar cada error en nueva línea (Ionic Alert acepta HTML simple)
+          message: mensajes.join('<br>'),
+          buttons: ['OK'],
+        });
+        await alert.present();
+      } else {
+        let mensaje = 'Error al guardar el chofer';
+        if (error?.error?.message) {
+          mensaje = error.error.message;
+        }
+        this.mostrarError(mensaje);
       }
-
-      this.mostrarError(mensaje);
     } finally {
       this.loading = false;
     }
@@ -209,5 +246,10 @@ export class ChoferFormPage implements OnInit {
     }
 
     return '';
+  }
+
+  isFieldInvalid(field: string): boolean {
+    const control = this.choferForm.get(field);
+    return !!(control && control.invalid && (control.touched || control.dirty));
   }
 }
