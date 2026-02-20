@@ -85,7 +85,7 @@ cd android
 #### 4. **Subir el APK al servidor**:
 
 ```powershell
-scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/apps/jabas_y_parihuelas/
+scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
 ```
 
 ---

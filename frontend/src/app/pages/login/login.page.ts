@@ -30,7 +30,7 @@ export class LoginPage implements OnInit {
     private route: ActivatedRoute,
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
   ) {
     // Deshabilitar menú inmediatamente
     this.menuCtrl.enable(false);
@@ -92,6 +92,24 @@ export class LoginPage implements OnInit {
       Object.keys(this.loginForm.controls).forEach((key) => {
         this.loginForm.get(key)?.markAsTouched();
       });
+
+      // Mostrar resumen de errores para que el usuario sepa por qué no se envía
+      const mensajes: string[] = [];
+      Object.keys(this.loginForm.controls).forEach((key) => {
+        const msg = this.getErrorMessage(this.loginForm, key);
+        if (msg)
+          mensajes.push(`${key === 'email' ? 'Email' : 'Contraseña'}: ${msg}`);
+      });
+
+      const alert = await this.alertController.create({
+        header: 'Errores de validación',
+        message: mensajes.length
+          ? `<ul>${mensajes.map((m) => `<li>${m}</li>`).join('')}</ul>`
+          : 'Complete los campos obligatorios.',
+        buttons: ['OK'],
+      });
+      await alert.present();
+
       return;
     }
 

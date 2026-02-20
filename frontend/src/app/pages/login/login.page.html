@@ -53,7 +53,7 @@
             {{ getErrorMessage(loginForm, 'password') }}
           </ion-note>
 
-          <ion-button expand="block" type="submit" class="ion-margin-top">
+          <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="loginForm.invalid || false">
             Iniciar Sesión
           </ion-button>
         </form>
