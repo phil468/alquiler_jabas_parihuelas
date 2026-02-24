@@ -14,7 +14,7 @@ import {
   Cliente,
   RepresentanteCliente,
 } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-cliente-form',
@@ -37,7 +37,7 @@ export class ClienteFormPage implements OnInit {
     private apiService: ApiService,
     private router: Router,
     private route: ActivatedRoute,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {
     this.clienteForm = this.fb.group({
       codigo: ['', [Validators.maxLength(20)]],
@@ -276,7 +276,7 @@ export class ClienteFormPage implements OnInit {
         this.clienteForm.get(key)?.markAsTouched();
       });
       this.mostrarError(
-        'Por favor completa los campos obligatorios del cliente'
+        'Por favor completa los campos obligatorios del cliente',
       );
       return;
     }

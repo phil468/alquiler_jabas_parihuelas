@@ -9,7 +9,7 @@ import {
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService, Placa } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-placa-form',
@@ -31,7 +31,7 @@ export class PlacaFormPage implements OnInit {
     private apiService: ApiService,
     private router: Router,
     private route: ActivatedRoute,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {
     this.placaForm = this.fb.group({
       numero_placa: ['', [Validators.required, Validators.maxLength(10)]],

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Chofer } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-choferes-lista',
@@ -22,7 +22,7 @@ export class ChoferesListaPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -59,7 +59,7 @@ export class ChoferesListaPage implements OnInit {
       (chofer) =>
         chofer.nombre.toLowerCase().includes(searchTerm) ||
         chofer.dni.toLowerCase().includes(searchTerm) ||
-        chofer.licencia?.toLowerCase().includes(searchTerm)
+        chofer.licencia?.toLowerCase().includes(searchTerm),
     );
   }
 
@@ -111,7 +111,7 @@ export class ChoferesListaPage implements OnInit {
 
       chofer.activo = !chofer.activo;
       this.mostrarExito(
-        `Chofer ${chofer.activo ? 'activado' : 'desactivado'} correctamente`
+        `Chofer ${chofer.activo ? 'activado' : 'desactivado'} correctamente`,
       );
     } catch (error) {
       this.mostrarError('Error al cambiar el estado del chofer');

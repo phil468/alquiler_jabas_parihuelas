@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Usuario } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-usuarios-lista',
@@ -22,7 +22,7 @@ export class UsuariosListaPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {}
@@ -56,7 +56,7 @@ export class UsuariosListaPage implements OnInit {
     this.usuariosFiltrados = this.usuarios.filter(
       (usuario) =>
         usuario.name.toLowerCase().includes(searchTerm) ||
-        usuario.email.toLowerCase().includes(searchTerm)
+        usuario.email.toLowerCase().includes(searchTerm),
     );
   }
 
@@ -108,7 +108,7 @@ export class UsuariosListaPage implements OnInit {
 
       usuario.activo = !usuario.activo;
       this.mostrarExito(
-        `Usuario ${usuario.activo ? 'activado' : 'desactivado'} correctamente`
+        `Usuario ${usuario.activo ? 'activado' : 'desactivado'} correctamente`,
       );
     } catch (error) {
       this.mostrarError('Error al cambiar el estado del usuario');

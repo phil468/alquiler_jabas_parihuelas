@@ -87,7 +87,10 @@ import {
   arrowDownCircle,
   trendingUpOutline,
   trendingDownOutline,
-  personCircle
+  personCircle,
+  cloudUpload,
+  shieldCheckmarkOutline,
+  cloudDownloadOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -159,7 +162,10 @@ addIcons({
   arrowDownCircle,
   trendingUpOutline,
   trendingDownOutline,
-  personCircle
+  personCircle,
+  cloudUpload,
+  shieldCheckmarkOutline,
+  cloudDownloadOutline,
 });
 
 bootstrapApplication(AppComponent, {

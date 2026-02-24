@@ -6,10 +6,16 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { IonicModule, MenuController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  MenuController,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { cloudDownloadOutline, logoMicrosoft } from 'ionicons/icons';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AlertController, LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +38,9 @@ export class LoginPage implements OnInit {
     private loadingController: LoadingController,
     private menuCtrl: MenuController,
   ) {
+    // Registrar iconos
+    addIcons({ cloudDownloadOutline, logoMicrosoft });
+
     // Deshabilitar menú inmediatamente
     this.menuCtrl.enable(false);
 
@@ -88,7 +97,20 @@ export class LoginPage implements OnInit {
   }
 
   async login() {
+    console.log('login(): invoked', {
+      valid: this.loginForm.valid,
+      value: this.loginForm.value,
+      emailErrors: this.loginForm.get('email')?.errors,
+      passwordErrors: this.loginForm.get('password')?.errors,
+      emailValue: this.loginForm.get('email')?.value,
+      passwordValue: this.loginForm.get('password')?.value,
+    });
+
     if (this.loginForm.invalid) {
+      console.log(
+        'login(): form is invalid; controls:',
+        this.loginForm.controls,
+      );
       Object.keys(this.loginForm.controls).forEach((key) => {
         this.loginForm.get(key)?.markAsTouched();
       });
@@ -100,6 +122,8 @@ export class LoginPage implements OnInit {
         if (msg)
           mensajes.push(`${key === 'email' ? 'Email' : 'Contraseña'}: ${msg}`);
       });
+
+      console.log('login(): validation messages:', mensajes);
 
       const alert = await this.alertController.create({
         header: 'Errores de validación',
@@ -113,6 +137,8 @@ export class LoginPage implements OnInit {
       return;
     }
 
+    console.log('login(): form valid, preparing to call auth service');
+
     const loading = await this.loadingController.create({
       message: 'Iniciando sesión...',
     });
@@ -120,14 +146,18 @@ export class LoginPage implements OnInit {
 
     const { email, password } = this.loginForm.value;
 
+    console.log('login(): submitting credentials for', email);
+
     this.authService.login(email, password).subscribe({
       next: async (response) => {
+        console.log('login(): auth success response', response);
         await loading.dismiss();
         if (response.success) {
           this.router.navigate(['/home'], { replaceUrl: true });
         }
       },
       error: async (error) => {
+        console.error('login(): auth error', error);
         await loading.dismiss();
         this.mostrarError(error.error?.message || 'Error al iniciar sesión');
       },
@@ -182,6 +212,9 @@ export class LoginPage implements OnInit {
   }
 
   loginWithMicrosoft() {
+    console.log(
+      'loginWithMicrosoft(): clicked, redirecting to Microsoft OAuth',
+    );
     this.authService.loginWithMicrosoft();
   }
 

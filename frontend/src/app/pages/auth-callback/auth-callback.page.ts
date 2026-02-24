@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-auth-callback',
@@ -17,7 +17,7 @@ export class AuthCallbackPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
   ) {}
 
   async ngOnInit() {

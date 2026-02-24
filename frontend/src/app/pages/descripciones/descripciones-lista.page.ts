@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, DescripcionJaba } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-descripciones-lista',
@@ -22,7 +22,7 @@ export class DescripcionesListaPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -67,7 +67,7 @@ export class DescripcionesListaPage implements OnInit {
         desc.codigo?.toLowerCase().includes(this.searchTerm) ||
         desc.descripcion?.toLowerCase().includes(this.searchTerm) ||
         desc.color?.toLowerCase().includes(this.searchTerm) ||
-        desc.material?.toLowerCase().includes(this.searchTerm)
+        desc.material?.toLowerCase().includes(this.searchTerm),
     );
   }
 

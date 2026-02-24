@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Cliente } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-clientes-lista',
@@ -22,7 +22,7 @@ export class ClientesListaPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   ngOnInit() {
@@ -58,7 +58,7 @@ export class ClientesListaPage implements OnInit {
       (cliente) =>
         cliente.nombre.toLowerCase().includes(searchTerm) ||
         cliente.codigo?.toLowerCase().includes(searchTerm) ||
-        cliente.ruc?.toLowerCase().includes(searchTerm)
+        cliente.ruc?.toLowerCase().includes(searchTerm),
     );
   }
 
@@ -110,7 +110,7 @@ export class ClientesListaPage implements OnInit {
 
       cliente.activo = !cliente.activo;
       this.mostrarExito(
-        `Cliente ${cliente.activo ? 'activado' : 'desactivado'} correctamente`
+        `Cliente ${cliente.activo ? 'activado' : 'desactivado'} correctamente`,
       );
     } catch (error) {
       this.mostrarError('Error al cambiar el estado del cliente');

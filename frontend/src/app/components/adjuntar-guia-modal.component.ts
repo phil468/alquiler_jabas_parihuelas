@@ -1,11 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import {
-  IonicModule,
   ModalController,
   AlertController,
   LoadingController,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import {
   FormBuilder,
   FormGroup,
@@ -200,7 +200,7 @@ export class AdjuntarGuiaModalComponent implements OnInit {
     private fb: FormBuilder,
     private sanitizer: DomSanitizer,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
   ) {
     // Configurar worker de PDF.js desde assets local
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'assets/pdf.worker.min.mjs';
@@ -375,7 +375,7 @@ export class AdjuntarGuiaModalComponent implements OnInit {
    * Extraer datos del contenido del PDF usando PDF.js
    */
   private async extraerDatosDelPDF(
-    file: File
+    file: File,
   ): Promise<{ serie: string; numero: string }> {
     return new Promise(async (resolve, reject) => {
       try {
@@ -476,7 +476,7 @@ export class AdjuntarGuiaModalComponent implements OnInit {
         formData: formData,
         data: this.guiaForm.value,
       },
-      'confirm'
+      'confirm',
     );
   }
 

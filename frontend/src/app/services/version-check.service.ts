@@ -5,7 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 import { Browser } from '@capacitor/browser';
 
 export interface AppVersion {
@@ -29,7 +29,7 @@ export class VersionCheckService {
 
   constructor(
     private http: HttpClient,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
   /**
@@ -51,7 +51,7 @@ export class VersionCheckService {
         'Versión actual instalada:',
         currentVersion,
         'Build:',
-        currentVersionCode
+        currentVersionCode,
       );
 
       // Obtener versión disponible en el servidor
@@ -64,7 +64,7 @@ export class VersionCheckService {
               'Versión disponible:',
               latestVersion.version,
               'Build:',
-              latestVersion.versionCode
+              latestVersion.versionCode,
             );
 
             // Comparar versiones (por versionCode es más confiable)
@@ -92,7 +92,7 @@ export class VersionCheckService {
       catchError((error) => {
         console.error('Error en getLatestVersion:', error);
         return of({ success: false, data: null as any });
-      })
+      }),
     );
   }
 
@@ -101,7 +101,7 @@ export class VersionCheckService {
    */
   private async showUpdateAlert(
     latestVersion: AppVersion,
-    currentVersion: string
+    currentVersion: string,
   ): Promise<void> {
     // Crear mensaje con formato simple
     const novedades = latestVersion.releaseNotes

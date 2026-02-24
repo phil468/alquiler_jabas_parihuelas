@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import {
-  IonicModule,
   AlertController,
   ModalController,
   Platform,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Registro } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
@@ -35,7 +35,7 @@ export class RegistroDetallePage implements OnInit {
     private router: Router,
     private alertController: AlertController,
     private modalController: ModalController,
-    private platform: Platform
+    private platform: Platform,
   ) {}
 
   ngOnInit() {
@@ -77,7 +77,7 @@ export class RegistroDetallePage implements OnInit {
                   this.registroId,
                   'aprobado',
                   undefined,
-                  currentUser?.id
+                  currentUser?.id,
                 )
                 .toPromise();
 
@@ -138,7 +138,7 @@ export class RegistroDetallePage implements OnInit {
                   this.registroId,
                   'rechazado',
                   data.motivo.trim(),
-                  currentUser?.id
+                  currentUser?.id,
                 )
                 .toPromise();
 
@@ -167,7 +167,7 @@ export class RegistroDetallePage implements OnInit {
       // TODO: Implementar modal para ver imagen
       const imageUrl = `${this.apiService['apiUrl'].replace(
         '/api/v1',
-        ''
+        '',
       )}/storage/${this.registro.imagen_path}`;
       window.open(imageUrl, '_blank');
     }
@@ -528,7 +528,7 @@ export class RegistroDetallePage implements OnInit {
   getImageUrl(imagePath: string): string {
     return `${this.apiService['apiUrl'].replace(
       '/api/v1',
-      ''
+      '',
     )}/storage/${imagePath}`;
   }
 }

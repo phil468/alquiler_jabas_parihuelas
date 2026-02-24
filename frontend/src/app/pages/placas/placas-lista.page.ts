@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Placa } from '../../services/api.service';
-import { AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-placas-lista',
@@ -22,11 +22,10 @@ export class PlacasListaPage implements OnInit {
   constructor(
     private apiService: ApiService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   ionViewWillEnter() {
     this.cargarPlacas();
@@ -57,7 +56,7 @@ export class PlacasListaPage implements OnInit {
       (placa) =>
         placa.numero_placa.toLowerCase().includes(searchTerm) ||
         placa.tipo_vehiculo?.toLowerCase().includes(searchTerm) ||
-        placa.marca?.toLowerCase().includes(searchTerm)
+        placa.marca?.toLowerCase().includes(searchTerm),
     );
   }
 
@@ -108,7 +107,7 @@ export class PlacasListaPage implements OnInit {
 
       placa.activo = !placa.activo;
       this.mostrarExito(
-        `Placa ${placa.activo ? 'activada' : 'desactivada'} correctamente`
+        `Placa ${placa.activo ? 'activada' : 'desactivada'} correctamente`,
       );
     } catch (error) {
       this.mostrarError('Error al cambiar el estado de la placa');

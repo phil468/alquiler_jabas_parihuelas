@@ -53,10 +53,17 @@
             {{ getErrorMessage(loginForm, 'password') }}
           </ion-note>
 
-          <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="loginForm.invalid || false">
+          <ion-button expand="block" type="submit" class="ion-margin-top">
             Iniciar Sesión
           </ion-button>
         </form>
+
+        <!-- DEBUG: estado del formulario (quitar después) -->
+        <p style="font-size:11px;color:#999;margin-top:8px;">
+          Form valid: {{ loginForm.valid }} | 
+          Email errors: {{ loginForm.get('email')?.errors | json }} | 
+          Password errors: {{ loginForm.get('password')?.errors | json }}
+        </p>
 
         <!-- <div class="register-link">
           <p>
