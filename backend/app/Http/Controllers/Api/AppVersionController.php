@@ -15,8 +15,8 @@ class AppVersionController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'version' => '1.2.2', // Actualiza esto cada vez que publiques una nueva versión
-                'versionCode' => 5, // Incrementa esto en cada release
+                'version' => '1.2.3', // Actualiza esto cada vez que publiques una nueva versión
+                'versionCode' => 6, // Incrementa esto en cada release
                 'downloadUrl' => env('FRONTEND_URL', 'https://apps.vanguardfresh.pe/jabas_y_parihuelas') . '/app-release.apk',
                 'forceUpdate' => false, // Cambia a true si es una actualización crítica
                 //frontend\android\app\build.gradle tambien debe cambiar en versionCode y versionName
