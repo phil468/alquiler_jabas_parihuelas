@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use GuzzleHttp\Client;
 
@@ -25,12 +26,18 @@ class AuthController extends Controller
     /**
      * Redirect to Microsoft OAuth
      */
-    public function redirectToMicrosoft()
+    public function redirectToMicrosoft(Request $request)
     {
-        return Socialite::driver('microsoft')
+        $driver = Socialite::driver('microsoft')
             ->setHttpClient($this->getGuzzleClient())
-            ->stateless()
-            ->redirect();
+            ->stateless();
+
+        // Si la petición viene de la app móvil, pasar la info a través del state de OAuth
+        if ($request->query('source') === 'mobile_app') {
+            $driver->with(['state' => 'mobile_' . Str::random(40)]);
+        }
+
+        return $driver->redirect();
     }
 
     /**
@@ -63,6 +70,11 @@ class AuthController extends Controller
      */
     public function handleMicrosoftCallback(Request $request)
     {
+        // Detectar si viene desde móvil (state de OAuth o User-Agent)
+        $state = $request->query('state', '');
+        $isMobileFromState = str_starts_with($state, 'mobile_');
+        $isMobile = $isMobileFromState || $this->isMobileApp($request);
+
         try {
             $microsoftUser = Socialite::driver('microsoft')
                 ->setHttpClient($this->getGuzzleClient())
@@ -73,13 +85,10 @@ class AuthController extends Controller
             $user = User::where('email', $microsoftUser->getEmail())->first();
 
             if (!$user) {
-                // Usuario no registrado en el sistema
-                $isMobile = $this->isMobileApp($request);
                 $errorMessage = urlencode('Usuario no registrado en el sistema. Contacte al administrador.');
                 
                 if ($isMobile) {
-                    $appScheme = 'jabasyparihuelas://';
-                    return redirect()->to("{$appScheme}login?error={$errorMessage}");
+                    return redirect()->to("jabasyparihuelas://login?error={$errorMessage}");
                 } else {
                     $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
                     return redirect()->to("{$frontendUrl}/login?error={$errorMessage}");
@@ -88,12 +97,10 @@ class AuthController extends Controller
 
             // Verificar si el usuario está activo
             if (!$user->activo) {
-                $isMobile = $this->isMobileApp($request);
                 $errorMessage = urlencode('Usuario inactivo. Contacte al administrador.');
                 
                 if ($isMobile) {
-                    $appScheme = 'jabasyparihuelas://';
-                    return redirect()->to("{$appScheme}login?error={$errorMessage}");
+                    return redirect()->to("jabasyparihuelas://login?error={$errorMessage}");
                 } else {
                     $frontendUrl = env('FRONTEND_URL', 'http://localhost:8100');
                     return redirect()->to("{$frontendUrl}/login?error={$errorMessage}");
@@ -137,9 +144,7 @@ class AuthController extends Controller
                 ] : null,
             ]));
 
-            // Detectar si viene desde móvil
-            $isMobile = $this->isMobileApp($request);
-            
+            // Redirigir según el contexto (web vs móvil)
             if ($isMobile) {
                 // Usar deep link custom scheme para la app móvil
                 // Con Chrome Custom Tabs, esto cerrará automáticamente el navegador
@@ -156,8 +161,6 @@ class AuthController extends Controller
             }
 
         } catch (\Exception $e) {
-            // En caso de error, redirigir según el contexto
-            $isMobile = $this->isMobileApp($request);
             $errorMessage = urlencode($e->getMessage());
             
             if ($isMobile) {
