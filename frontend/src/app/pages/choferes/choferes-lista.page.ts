@@ -1,17 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Chofer } from '../../services/api.service';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonSearchbar,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonSpinner,
+  IonList,
+  IonItem,
+  IonAvatar,
+  IonLabel,
+  IonBadge,
+  IonFab,
+  IonFabButton,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-choferes-lista',
   templateUrl: './choferes-lista.page.html',
   styleUrls: ['./choferes-lista.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonSearchbar,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    IonSpinner,
+    IonList,
+    IonItem,
+    IonAvatar,
+    IonLabel,
+    IonBadge,
+    IonFab,
+    IonFabButton,
+  ],
 })
 export class ChoferesListaPage implements OnInit {
   choferes: Chofer[] = [];

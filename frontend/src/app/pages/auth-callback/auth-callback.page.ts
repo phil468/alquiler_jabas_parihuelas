@@ -1,16 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import {
+  LoadingController,
+  IonContent,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { LoadingController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-auth-callback',
   templateUrl: './auth-callback.page.html',
   styleUrls: ['./auth-callback.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [CommonModule, IonContent, IonSpinner],
 })
 export class AuthCallbackPage implements OnInit {
   constructor(

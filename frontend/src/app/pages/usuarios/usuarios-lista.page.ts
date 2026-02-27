@@ -1,17 +1,53 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ApiService, Usuario } from '../../services/api.service';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonSearchbar,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonList,
+  IonItem,
+  IonAvatar,
+  IonLabel,
+  IonBadge,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-usuarios-lista',
   templateUrl: './usuarios-lista.page.html',
   styleUrls: ['./usuarios-lista.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonSearchbar,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    IonList,
+    IonItem,
+    IonAvatar,
+    IonLabel,
+    IonBadge,
+    IonSpinner,
+  ],
 })
 export class UsuariosListaPage implements OnInit {
   usuarios: Usuario[] = [];

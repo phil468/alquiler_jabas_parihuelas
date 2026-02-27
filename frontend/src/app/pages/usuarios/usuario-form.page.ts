@@ -6,17 +6,57 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Usuario, Role } from '../../services/api.service';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-usuario-form',
   templateUrl: './usuario-form.page.html',
   styleUrls: ['./usuario-form.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonNote,
+    IonSelect,
+    IonSelectOption,
+    IonCheckbox,
+  ],
 })
 export class UsuarioFormPage implements OnInit {
   usuarioForm!: FormGroup;

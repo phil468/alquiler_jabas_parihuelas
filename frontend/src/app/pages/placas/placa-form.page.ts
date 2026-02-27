@@ -6,17 +6,59 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService, Placa } from '../../services/api.service';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonCheckbox,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-placa-form',
   templateUrl: './placa-form.page.html',
   styleUrls: ['./placa-form.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonNote,
+    IonSelect,
+    IonSelectOption,
+    IonCheckbox,
+    IonSpinner,
+  ],
 })
 export class PlacaFormPage implements OnInit {
   placaForm: FormGroup;

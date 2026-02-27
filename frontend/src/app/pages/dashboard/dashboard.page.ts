@@ -6,7 +6,29 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonSpinner,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonBadge,
+} from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
@@ -18,7 +40,30 @@ Chart.register(...registerables);
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [
+    CommonModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    IonSpinner,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonBadge,
+  ],
 })
 export class DashboardPage implements OnInit, AfterViewInit {
   @ViewChild('estadoChart') estadoChartRef!: ElementRef;
@@ -34,7 +79,10 @@ export class DashboardPage implements OnInit, AfterViewInit {
   clientesChart: Chart | null = null;
   choferesChart: Chart | null = null;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.cargarEstadisticas();

@@ -76,8 +76,7 @@ public function getCurrentVersion()
 
 ```powershell
 cd c:\laragon\www\alquiler_jabas_parihuelas\frontend
-npm run build -- --configuration=mobile
-npx cap sync android
+npm run build:apk
 cd android
 .\gradlew assembleRelease
 ```
@@ -85,10 +84,21 @@ cd android
 #### 4. **Subir el APK al servidor**:
 
 ```powershell
+cd..
 scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
 ```
 
 ---
+
+cd c:\laragon\www\alquiler_jabas_parihuelas\frontend
+npm run build:apk
+cd android
+.\gradlew assembleRelease
+cd..
+scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
+
+npm run build:web
+scp -r www/* john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
 
 ## 🎯 Tipos de Actualización
 
@@ -139,7 +149,7 @@ versionName "1.1.0"
 3. **Compilar**:
 
 ```powershell
-npm run build -- --configuration=mobile
+npm run build:apk
 npx cap sync android
 cd android
 .\gradlew assembleRelease
@@ -149,6 +159,10 @@ cd android
 
 ```powershell
 scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/apps/jabas_y_parihuelas/
+scp -r www/* john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
+
+cd..
+scp android/app/build/outputs/apk/release/app-release.apk john.delacruz@172.18.10.10:/var/www/jabasyparihuelas/frontend/www/
 ```
 
 5. **Listo**: Los usuarios verán la alerta al abrir la app

@@ -1,14 +1,13 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController, IonButton, IonIcon } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-firma-pad',
   templateUrl: './firma-pad.component.html',
   styleUrls: ['./firma-pad.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [CommonModule, IonButton, IonIcon],
 })
 export class FirmaPadComponent {
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;

@@ -35,7 +35,10 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private userKey = 'auth_user';
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {
     this.loadStoredUser();
     this.setupDeepLinkListener();
   }
@@ -46,6 +49,13 @@ export class AuthService {
         const url = data.url;
         console.log('[DeepLink] URL recibido:', url);
 
+        // Cerrar el browser in-app (Chrome Custom Tabs) inmediatamente
+        try {
+          await Browser.close();
+        } catch (_) {
+          // Browser ya estaba cerrado o no aplica
+        }
+
         // Verificar si es callback de OAuth
         if (url.includes('auth-callback')) {
           try {
@@ -53,23 +63,16 @@ export class AuthService {
             const token = urlObj.searchParams.get('token');
             const userEncoded = urlObj.searchParams.get('user');
 
-            console.log('[DeepLink] Params:', {
-              hasToken: !!token,
-              hasUser: !!userEncoded,
-            });
-
             if (token && userEncoded) {
               // Autenticación exitosa
               try {
                 const userData = JSON.parse(atob(userEncoded));
-                console.log('[DeepLink] Usuario decodificado:', userData.email);
                 this.setAuth(userData, token);
 
                 // Pequeño delay para asegurar que se guarde
                 await new Promise((resolve) => setTimeout(resolve, 100));
 
                 await this.router.navigate(['/home'], { replaceUrl: true });
-                console.log('[DeepLink] Navegación a home completada');
               } catch (error) {
                 console.error('[DeepLink] Error parseando usuario:', error);
                 await this.router.navigate(['/login'], {
@@ -124,7 +127,7 @@ export class AuthService {
           if (response.success && response.data) {
             this.setAuth(response.data.user, response.data.token);
           }
-        })
+        }),
       );
   }
 
@@ -132,7 +135,7 @@ export class AuthService {
     name: string,
     email: string,
     password: string,
-    passwordConfirmation: string
+    passwordConfirmation: string,
   ): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.apiUrl}/auth/register`, {
@@ -146,7 +149,7 @@ export class AuthService {
           if (response.success && response.data) {
             this.setAuth(response.data.user, response.data.token);
           }
-        })
+        }),
       );
   }
 
@@ -154,18 +157,16 @@ export class AuthService {
     const isMobile = Capacitor.isNativePlatform();
 
     if (isMobile) {
-      // En móvil, abrir en browser externo (Chrome Custom Tabs)
-      // Esto permite que el deep link funcione automáticamente
-      const authUrl = `${this.apiUrl}/auth/microsoft`;
+      // En móvil, usar Chrome Custom Tabs via @capacitor/browser
+      // Agregar parámetro para que el backend sepa que viene de la app
+      const authUrl = `${this.apiUrl}/auth/microsoft?source=mobile_app`;
 
-      // Usar Browser plugin pero sin popover (abre en Chrome Custom Tabs)
       await Browser.open({
         url: authUrl,
-        // NO usar presentationStyle para que abra en Chrome Custom Tabs
-        windowName: '_blank',
+        presentationStyle: 'popover',
       });
 
-      // El callback será manejado por el deep link listener
+      // El deep link listener cerrará el browser automáticamente
     } else {
       // En web, redirect normal
       window.location.href = `${this.apiUrl}/auth/microsoft`;
@@ -180,7 +181,7 @@ export class AuthService {
           if (response.success && response.data) {
             this.setAuth(response.data.user, response.data.token);
           }
-        })
+        }),
       );
   }
 
@@ -224,7 +225,7 @@ export class AuthService {
         if (response.success && response.data) {
           this.setToken(response.data.token);
         }
-      })
+      }),
     );
   }
 
@@ -276,7 +277,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
     console.log(
       '[AuthService] currentUserSubject value:',
-      this.currentUserSubject.value
+      this.currentUserSubject.value,
     );
     console.log('[AuthService] clearAuth() - COMPLETED');
   }

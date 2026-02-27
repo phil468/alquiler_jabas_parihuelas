@@ -1,10 +1,25 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import {
   ModalController,
   AlertController,
   LoadingController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonNote,
+  IonFooter,
 } from '@ionic/angular/standalone';
 import {
   FormBuilder,
@@ -186,7 +201,26 @@ import * as pdfjsLib from 'pdfjs-dist';
     `,
   ],
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardSubtitle,
+    IonCardContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonNote,
+    IonFooter,
+  ],
 })
 export class AdjuntarGuiaModalComponent implements OnInit {
   @Input() registroId!: number;

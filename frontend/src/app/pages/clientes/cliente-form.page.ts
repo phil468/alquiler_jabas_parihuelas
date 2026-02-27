@@ -7,21 +7,67 @@ import {
   ReactiveFormsModule,
   FormArray,
 } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   ApiService,
   Cliente,
   RepresentanteCliente,
 } from '../../services/api.service';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonSpinner,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonNote,
+  IonText,
+  IonTextarea,
+  IonCheckbox,
+  IonBadge,
+  IonList,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-cliente-form',
   templateUrl: './cliente-form.page.html',
   styleUrls: ['./cliente-form.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonSpinner,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonNote,
+    IonText,
+    IonTextarea,
+    IonCheckbox,
+    IonBadge,
+    IonList,
+  ],
 })
 export class ClienteFormPage implements OnInit {
   clienteForm: FormGroup;

@@ -133,22 +133,22 @@ export class AppComponent {
     private permisosService: PermisosService,
     private router: Router,
     private alertController: AlertController,
-    private versionCheckService: VersionCheckService
+    private versionCheckService: VersionCheckService,
   ) {
     // Suscribirse a cambios del usuario autenticado
     this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
 
-    // Verificar actualizaciones al iniciar la app
-    this.checkAppVersion();
+    // Iniciar verificación periódica de actualizaciones
+    this.versionCheckService.startPeriodicCheck();
   }
 
-  private async checkAppVersion() {
-    // Esperar un momento para que la app termine de cargar
-    setTimeout(async () => {
-      await this.versionCheckService.checkForUpdates();
-    }, 2000); // Esperar 2 segundos después de iniciar
+  /**
+   * Verificar versión manualmente desde el menú
+   */
+  async checkVersion(): Promise<void> {
+    await this.versionCheckService.checkForUpdatesManual();
   }
 
   get isLoginPage(): boolean {
@@ -184,7 +184,7 @@ export class AppComponent {
 
       if (role == 'confirm') {
         console.log(
-          '[AppComponent] User confirmed logout, calling authService.logout()'
+          '[AppComponent] User confirmed logout, calling authService.logout()',
         );
         await this.authService.logout();
         console.log('[AppComponent] authService.logout() completed');

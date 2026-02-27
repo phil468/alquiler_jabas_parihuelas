@@ -1,10 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import {
   AlertController,
   ModalController,
   Platform,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonButton,
+  IonContent,
+  IonSpinner,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonBadge,
+  IonIcon,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService, Registro } from '../services/api.service';
@@ -20,7 +40,30 @@ import { AdjuntarGuiaModalComponent } from '../components/adjuntar-guia-modal.co
   templateUrl: './registro-detalle.page.html',
   styleUrls: ['./registro-detalle.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [
+    CommonModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonButton,
+    IonContent,
+    IonSpinner,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonBadge,
+    IonIcon,
+    IonCardContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonGrid,
+    IonRow,
+    IonCol,
+  ],
 })
 export class RegistroDetallePage implements OnInit {
   registro: Registro | null = null;
